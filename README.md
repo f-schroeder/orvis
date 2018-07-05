@@ -10,6 +10,11 @@ It was partially inspired by [Graphics2](https://github.com/Max1412/Graphics2) a
 - Only tested on Windows, but Linux should work as well
 
 ## External dependencies
+#### Build system
+- [CMake](https://cmake.org/)
+- [vcpkg](https://github.com/Microsoft/vcpkg)
+
+#### Libraries
 - [ImGui](https://github.com/ocornut/imgui)
 - [stb_image & stb_image_write](https://github.com/nothings/stb)
 - [GLshader](https://gitlab.uni-koblenz.de/johannesbraun/glshader) by Johannes Braun
