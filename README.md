@@ -1,7 +1,7 @@
 # ORVIS
 **O**penGL **R**endering and **Vis**ualization
 
-Orvis is a low-level OpenGL 4.6 rendering framework and meinly intended for my personal projects.
+Orvis is a low-level OpenGL 4.6 rendering framework and mainly intended for my personal projects.
 It was partially inspired by [Graphics2](https://github.com/Max1412/Graphics2) and [DINO](https://gitlab.uni-koblenz.de/CVFP_DF18/Framework) in both of which I was involved as well.
 
 ## Requirements
