@@ -10,14 +10,10 @@ set(ORV_BINARIES_FOLDER			${PROJECT_SOURCE_DIR}/bin)
 set(ORV_RESOURCES_PATH			${PROJECT_SOURCE_DIR}/res)
 set(ORV_SHADERS_PATH			${PROJECT_SOURCE_DIR}/shd)
 
-
-#find_package(GLEW REQUIRED)
 find_package(assimp REQUIRED)
-find_package(glm 0.9.8 REQUIRED)
-find_package(glfw3 3.2.1 REQUIRED)
+find_package(glm REQUIRED)
+find_package(glfw3 REQUIRED)
 find_package(glbinding REQUIRED)
-
-#list(APPEND ORV_INCLUDE_DIRECTORIES ${GLEW_INCLUDE_PATH})
 
 add_definitions(
     -DGLFW_INCLUDE_NONE
@@ -79,7 +75,7 @@ foreach(subdir ${children})
             set(success 0)
 
         else()
-            ### handle structures like: external/<something>/include as proper include paths
+            ### handle structures like: ext/<something>/include as proper include paths
             if(IS_DIRECTORY "${ORV_EXTERNAL_FOLDER}/${subdir}/include")
                 list(APPEND ORV_INCLUDE_DIRECTORIES "${ORV_EXTERNAL_FOLDER}/${subdir}/include")
             endif()
