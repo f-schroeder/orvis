@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include "Createable.hpp"
 
 using namespace gl;
 
@@ -25,7 +26,7 @@ enum class Samples
  * @brief An OpenGL sampler object holding texture sampling data. This is to prohibit all the
  * glSetTextureParameter calls which may or may not work.
  */
-class Sampler
+class Sampler : Createable<Sampler>
 {
 public:
     Sampler();
@@ -55,7 +56,7 @@ private:
  * @details Every texture holds its own default sampler which can be accessed with
  * Texture::sampler(). It can be overridden using the overrideSampler function.
  */
-class Texture
+class Texture : Createable<Texture>
 {
 public:
     /**

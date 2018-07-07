@@ -3,6 +3,7 @@
 #include "Texture.hpp"
 #include <array>
 #include <unordered_map>
+#include "Createable.hpp"
 
 using namespace gl;
 
@@ -11,7 +12,7 @@ using namespace gl;
  * @details Every framebuffer holds its own framebuffer-handle and in case the depth texture is used
  * a renderbuffer-handle. It also manages the color-attachments and the corresponding drawbuffers.
  */
-class FrameBuffer
+class FrameBuffer : Createable<FrameBuffer>
 {
 public:
     /**

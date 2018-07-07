@@ -1,12 +1,12 @@
 #pragma once
-#include "Creatable.hpp"
+#include "Createable.hpp"
 #include "glm/glm.hpp"
 
 /**
  * @brief Struct containing lighting information passed to the shader
  * Currently only point lights!
  */
-struct Light : Creatable<Light>
+struct Light : Createable<Light>
 {
     /**
      * @brief Initializes the light struct

@@ -3,22 +3,21 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-SkyBox::SkyBox()
+Cubemap::Cubemap()
 {
     m_shaderProgram.attachNew(GL_VERTEX_SHADER, ShaderFile::load("skyBox.vert"));
     m_shaderProgram.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("skyBox.frag"));
-    m_shaderProgram.link();
     m_shaderProgram.use();
     m_viewProjLoc = glGetUniformLocation(m_shaderProgram.id(), "invProjView");
 }
 
-void SkyBox::generateCubeMap(const std::experimental::filesystem::path& path, const std::string& extension,
+void Cubemap::generateCubeMap(const std::experimental::filesystem::path& path, const std::string& extension,
                              const std::array<std::string, 6>& faces)
 {
     generateCubeMap(path, extension, faces[0], faces[1], faces[2], faces[3], faces[4], faces[5]);
 }
 
-void SkyBox::generateCubeMap(const std::experimental::filesystem::path& cubeMapSourcePath,
+void Cubemap::generateCubeMap(const std::experimental::filesystem::path& cubeMapSourcePath,
                              const std::string& extension, const std::string& posX,
                              const std::string& negX, const std::string& posY,
                              const std::string& negY, const std::string& posZ,
@@ -95,7 +94,7 @@ void SkyBox::generateCubeMap(const std::experimental::filesystem::path& cubeMapS
     m_texture.generateMipmaps();
 }
 
-void SkyBox::render(const glm::mat4& viewMatrix, const glm::mat4& projMatrix)
+void Cubemap::render(const glm::mat4& viewMatrix, const glm::mat4& projMatrix)
 {
     glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
@@ -113,4 +112,4 @@ void SkyBox::render(const glm::mat4& viewMatrix, const glm::mat4& projMatrix)
     glEnable(GL_CULL_FACE);
 }
 
-const Texture& SkyBox::getTexture() const { return m_texture; }
+const Texture& Cubemap::getTexture() const { return m_texture; }

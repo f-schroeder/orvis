@@ -6,6 +6,7 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Createable.hpp"
 
 enum class Direction
 {
@@ -32,7 +33,7 @@ constexpr float SENSITIVTY = 0.05f;
  *		T/G:		increase/decrease camera movement speed
  *		SPACE:		reset camera
  */
-class Camera
+class Camera : Createable<Camera>
 {
 public:
     /**

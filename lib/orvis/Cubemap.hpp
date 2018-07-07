@@ -11,14 +11,14 @@ using namespace gl;
 /** @brief A Class to load, generate and render cubemaps.
  * @details
  */
-class SkyBox
+class Cubemap : Createable<Cubemap>
 {
 public:
     /** @brief Creates a new shader program and gets a uniform location for invViewProj Matrix.
      * @details The Shader Program attaches skyBox.vert and skyBox.frag shader in which the cube
      * mapping is implemented.
      */
-    SkyBox();
+    Cubemap();
 
     /** @brief Loads a cubemap from a source path.
      * @param cubeMapSourcePath The Path where the cubemap faces reside.

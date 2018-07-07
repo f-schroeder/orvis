@@ -11,7 +11,7 @@ using namespace gl;
  * @detail Those are used to index attributes in Vertex Buffers, as well as combining them with
  * Element Buffers for indexed rendering.
  */
-class VertexArray
+class VertexArray : Createable<VertexArray>
 {
 public:
     VertexArray();

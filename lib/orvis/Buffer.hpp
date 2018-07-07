@@ -3,6 +3,7 @@
 #include <array>
 #include <glbinding/gl/gl.h>
 #include <vector>
+#include "Createable.hpp"
 
 using namespace gl;
 
@@ -11,7 +12,7 @@ using namespace gl;
  * @tparam T The type of object stored in the buffer.
  */
 template <typename T>
-class Buffer
+class Buffer : Createable<Buffer<T>>
 {
 public:
     /**

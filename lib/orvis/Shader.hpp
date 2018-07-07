@@ -8,6 +8,7 @@
 #include <variant>
 #include <vector>
 #include "Binding.hpp"
+#include "Createable.hpp"
 
 /** @brief A file handle for shader source files.
  * @details When reloading, it uses the last file write time of the
@@ -52,7 +53,7 @@ private:
 /** @brief A shader object handles compilation of OpenGL shaders and can be attached as a shared_ptr
  * to a Program.
  */
-class Shader
+class Shader : Createable<Shader>
 {
 public:
     /** A shader can use files or raw source strings as source. */
@@ -137,7 +138,7 @@ private:
  * themselves on deletion. This is needed for a global shader program reload support. Operations on
  * this static vector are thread-safe.
  */
-class Program
+class Program : Createable<Program>
 {
 public:
     Program();

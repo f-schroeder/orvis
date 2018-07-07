@@ -4,11 +4,11 @@
 #include <memory>
 
 /**
- * @brief A creator-pattern implementation using CRTP. Used in FunctionClass<..., ...>.
+ * @brief A creator-pattern implementation using CRTP.
  * @tparam Self The deriving class itself.
  */
 template <typename Self>
-struct Creatable
+struct Createable
 {
     /**
      * @brief Constructs a shared_ptr of the type given as the template parameter.

@@ -1,11 +1,12 @@
 #pragma once
 #include <cstdint>
 #include "glm/glm.hpp"
+#include "Createable.hpp"
 
 /**
  * @brief Struct containing PBR material information passed to the shader
  */
-class Material
+class Material : Createable<Material>
 {
 public:
     /**
