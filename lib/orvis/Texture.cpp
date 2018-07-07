@@ -96,6 +96,9 @@ Texture::Texture(GLenum target, GLenum format, int size, int levels)
     m_size = { size, 1, 1 };
     m_levels = levels == -1 ? static_cast<int>(floor(log2(size)) + 1) : levels;
     glTextureStorage1D(m_textureId, m_levels, m_format, size);
+
+    util::getGlError(__LINE__, __FUNCTION__);
+
     generateHandle();
 }
 
@@ -109,8 +112,10 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, int levels)
         : levels;
 
     glTextureStorage2D(m_textureId, m_levels, m_format, m_size.x, m_size.y);
-    GLenum error = glGetError();
-    //generateHandle();
+
+    util::getGlError(__LINE__, __FUNCTION__);
+
+    generateHandle();
 }
 
 Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, int levels)
@@ -125,16 +130,10 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, int levels)
         : levels;
     glTextureStorage3D(
         m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
-    while ((err = glGetError()) != GL_NO_ERROR)
-    {
-        std::cout << "T0 OpenGL Error: " << err << std::endl;
-    }
+    
+    util::getGlError(__LINE__, __FUNCTION__);
 
     generateHandle();
-    while ((err = glGetError()) != GL_NO_ERROR)
-    {
-        std::cout << "T1 OpenGL Error: " << err << std::endl;
-    }
 }
 
 Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, Samples samples,
@@ -152,6 +151,9 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, Samples samples,
         m_size.x,
         m_size.y,
         m_fixedSampleLocations);
+
+    util::getGlError(__LINE__, __FUNCTION__);
+
     generateHandle();
 }
 
@@ -171,6 +173,9 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, Samples samples,
         m_size.y,
         m_size.z,
         m_fixedSampleLocations);
+
+    util::getGlError(__LINE__, __FUNCTION__);
+
     generateHandle();
 }
 
