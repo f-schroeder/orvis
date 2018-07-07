@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include "Binding.hpp"
 
 /** @brief A file handle for shader source files.
  * @details When reloading, it uses the last file write time of the
@@ -62,8 +63,9 @@ public:
      * GL_TESSELATION_CONTROL_SHADER, GL_TESSELATION_EVALUATION_SHADER, GL_GEOMETRY_SHADER or
      * GL_COMPUTE_SHADER.
      * @param source A Shader source string or file-pointer to the shader source.
+     * @param definitions Defines that are added to the shader
      */
-    Shader(GLenum type, const ShaderSource& source);
+    Shader(GLenum type, const ShaderSource& source, std::vector<glsp::definition> definitions = binding::defaultShaderDefines);
 
     /** @brief Takes in multiple source files and strings and compiles a shader from it.
      * @param type The OpenGL shader type. Can be one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
@@ -71,8 +73,9 @@ public:
      * GL_COMPUTE_SHADER.
      * @param sources Shader source string and/or file-pointers to the shader sources. They will be
      * appended to one-another in the sequence they are passed in.
+     * @param definitions Defines that are added to the shader
      */
-    Shader(GLenum type, const std::vector<ShaderSource>& sources);
+    Shader(GLenum type, const std::vector<ShaderSource>& sources, std::vector<glsp::definition> definitions = binding::defaultShaderDefines);
 
     /** @brief Calls glDeleteShader, if the handle is not 0. */
     ~Shader();
@@ -117,9 +120,10 @@ public:
     GLuint id() const;
 
 private:
-    GLenum                    m_type;
-    GLuint                    m_handle;
-    std::vector<ShaderSource> m_sources;
+    GLenum                          m_type;
+    GLuint                          m_handle;
+    std::vector<ShaderSource>       m_sources;
+    std::vector<glsp::definition>   m_definitions;
 };
 
 /** @brief A Program consists of multiple shaders.

@@ -62,14 +62,15 @@ void                                                     ShaderFile::reload()
 
 const std::string& ShaderFile::contents() const { return m_source; }
 
-Shader::Shader(GLenum type, const ShaderSource& source)
-        : Shader(type, std::vector<ShaderSource>{source})
+Shader::Shader(GLenum type, const ShaderSource& source, std::vector<glsp::definition> definitions)
+        : Shader(type, std::vector<ShaderSource>{source}, definitions)
 {
 }
 
-Shader::Shader(GLenum type, const std::vector<ShaderSource>& sources)
-        : m_type(type)
-        , m_handle(glCreateShader(m_type))
+Shader::Shader(GLenum type, const std::vector<ShaderSource>& sources, std::vector<glsp::definition> definitions)
+    : m_type(type)
+    , m_handle(glCreateShader(m_type))
+    , m_definitions(definitions)
 {
     for(const auto& source : sources)
         m_sources.emplace_back(source);
@@ -128,14 +129,16 @@ bool Shader::reload(bool checkStatus)
         }
         void operator()(std::string& str)
         {
-            begin_pointers.emplace_back(str.c_str());
-            begin_pointer_lengths.emplace_back(static_cast<int>(str.length()));
+            std::string processedSource = glsp::preprocess_source(str, "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(parent.id()), { util::shadersPath }, parent.m_definitions).contents;
+            begin_pointers.emplace_back(processedSource.c_str());
+            begin_pointer_lengths.emplace_back(static_cast<int>(processedSource.length()));
         }
         void operator()(std::shared_ptr<ShaderFile>& file)
         {
             file->reload();
-            begin_pointers.emplace_back(file->contents().c_str());
-            begin_pointer_lengths.emplace_back(static_cast<int>(file->contents().length()));
+            std::string processedSource = glsp::preprocess_source(file->contents(), "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(parent.id()), { util::shadersPath }, parent.m_definitions).contents;
+            begin_pointers.emplace_back(processedSource.c_str());
+            begin_pointer_lengths.emplace_back(static_cast<int>(processedSource.length()));
         }
         Shader&                  parent;
         std::vector<const char*> begin_pointers;
