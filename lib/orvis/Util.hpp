@@ -23,6 +23,11 @@ namespace util
     void printOpenGLInfo();
 
     /**
+    * \brief Gets the system time using glfwGetTime() as float
+    */
+    float getTime();
+
+    /**
      * \brief inits the graphics API
      */
     void initGL();

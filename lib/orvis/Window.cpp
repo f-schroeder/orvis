@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
+#include "Shader.hpp"
 
 Window::Window(int width, int height, const std::string& title, const Hints& hints)
 {
@@ -64,12 +65,14 @@ float Window::update()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    const float deltaTime = glfwGetTime() - m_lastTime;
-    m_lastTime = glfwGetTime();
+    const float deltaTime = util::getTime() - m_lastTime;
+    m_lastTime = util::getTime();
 
-    if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         close();
-    }
+
+    if (glfwGetKey(m_window, GLFW_KEY_F5) == GLFW_PRESS)
+        Program::reloadAll();
 
     glfwSwapBuffers(m_window);
     glfwPollEvents();

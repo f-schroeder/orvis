@@ -40,6 +40,11 @@ namespace util
         std::cout << "Shading Language Version: " << convertGLubyteToString(glGetString(GL_SHADING_LANGUAGE_VERSION)) << std::endl;
     }
 
+    float getTime()
+    {
+        return static_cast<float>(glfwGetTime());
+    }
+
     void initGL()
     {
         // init glbinding
