@@ -46,7 +46,7 @@ public:
     GLuint id() const;
 
 private:
-    GLuint                                               m_samplerId;
+    GLuint                                               m_samplerId = GL_INVALID_INDEX;
     std::unordered_map<GLenum, std::variant<int, float, GLenum>> m_samplerParams;
 };
 

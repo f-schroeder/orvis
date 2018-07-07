@@ -64,7 +64,7 @@ namespace util
         return extenstions;
     }
 
-    void getGLerror(int line, const std::string& function)
+    void getGlError(int line, const std::string& function)
     {
         if constexpr(debugmode)
         {

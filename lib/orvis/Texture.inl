@@ -22,7 +22,7 @@ std::vector<T> Texture::data(GLenum format, int level) const
         type = GL_UNSIGNED_BYTE;
 
     size_t components = 1;
-    switch(format)
+    switch (format)
     {
     case GL_RED:
         components = 1;
@@ -36,23 +36,19 @@ std::vector<T> Texture::data(GLenum format, int level) const
     case GL_RGBA:
         components = 4;
         break;
+    default: 
+        components = 4;
+        break;
     }
 
     const glm::ivec3 dim = m_size;
     std::vector<T>   pixels(dim.x * dim.y * dim.z * components);
-    if(glGetTextureImage)
-        glGetTextureImage(m_textureId,
-                          level,
-                          format,
-                          type,
-                          static_cast<GLsizei>(pixels.size() * sizeof(T)),
-                          pixels.data());
-    else
-    {
-        glBindTexture(m_target, m_textureId);
-        glGetTexImage(m_target, level, format, type, pixels.data());
-        glBindTexture(m_target, 0);
-    }
+    glGetTextureImage(m_textureId,
+        level,
+        format,
+        type,
+        static_cast<GLsizei>(pixels.size() * sizeof(T)),
+        pixels.data());
     return pixels;
 }
 

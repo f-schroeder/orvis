@@ -13,7 +13,7 @@ Timer::~Timer()
     {
         glDeleteQueries(1, &m_query);
     }
-    util::getGLerror(__LINE__, __FUNCTION__);
+    util::getGlError(__LINE__, __FUNCTION__);
 }
 
 void Timer::start() const
@@ -34,7 +34,7 @@ void Timer::stop()
     {
         m_ftimes.erase(m_ftimes.begin());
     }
-    util::getGLerror(__LINE__, __FUNCTION__);
+    util::getGlError(__LINE__, __FUNCTION__);
 }
 
 void Timer::drawGuiWindow(GLFWwindow* window)

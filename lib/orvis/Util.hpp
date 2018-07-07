@@ -43,7 +43,7 @@ namespace util
      * \param line use __LINE__
      * \param function use __FUNCTION__
      */
-    void getGLerror(int line, const std::string& function);
+    void getGlError(int line, const std::string& function);
 
     /**
      * \brief saves the FBO content to a PNG file (starts a new thread)
