@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Createable.hpp"
+#include "Buffer.hpp"
 
 enum class Direction
 {
@@ -21,6 +22,15 @@ enum class Direction
 // default camera values
 constexpr float SPEED      = 10.0f;
 constexpr float SENSITIVTY = 0.05f;
+
+struct GpuCamera
+{
+    glm::vec4 position = {0.f, 0.f, 0.f, 1.f};
+    glm::vec4 direction = { 0.f, 0.f, 0.f, 0.f };
+    glm::mat4 view;
+    glm::mat4 projection;
+    glm::mat4 invVP;
+};
 
 /**
  * @brief first person camera
@@ -38,26 +48,32 @@ class Camera : Createable<Camera>
 public:
     /**
      * @brief creates camera object and sets starting parameters
-     * @param position set starting position
-     * @param up set starting up vector
-     * @param yaw set starting rotation
-     * @param pitch set starting rotation
+     * @param projection The projection matrix of the camera
+     * @param position Starting position
+     * @param target Location to which the camera is pointed at
+     * @param up Starting up vector
      */
-    Camera(glm::vec3 position = glm::vec3(0.0f), glm::vec3 target = {0, 0, 0},
+    Camera(glm::mat4 projection, glm::vec3 position = glm::vec3(0.0f), glm::vec3 target = {0, 0, -1},
            glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f));
 
     /**
-     * @brief handles input and updates camera values
+     * @brief Handles input and updates camera values
      * @param window GLFWwindow to get inputs from
      */
     void update(GLFWwindow* window);
 
     /**
-     * @brief resets camera to starting position and orientation
+    * @brief Puts camera data into a GpuCamera struct and uploads it to the GPU.
+    * Also binds the buffer to binding::BufferBinding::cameraParameters
+    */
+    void uploadToGpu();
+
+    /**
+     * @brief Resets camera to starting position and orientation
      */
     void reset();
 
-    /** @return The view matrix. */
+    /** @return The view matrix */
     glm::mat4 view() const;
 
     // camera attributes
@@ -76,6 +92,12 @@ public:
     glm::vec3 left() const;
     /** @return The local right vector ({1, 0, 0} rotated). */
     glm::vec3 right() const;
+
+    /** @brief Sets the projection matrix. */
+    void setProjection(glm::mat4 projection);
+
+    /** @return The view matrix. */
+    glm::mat4 projection() const;
 
 private:
     void processKeyboard(Direction direction, double deltaTime, bool speedModifier);
@@ -96,4 +118,8 @@ private:
     bool   m_cameraActive = false;
     bool   m_mousePressed = false;
     bool   m_cPressed     = false;
+
+    glm::mat4 m_projection;
+
+    Buffer<GpuCamera> m_cameraBuffer;
 };

@@ -5,6 +5,7 @@
 #include "Texture.hpp"
 #include "VertexArray.hpp"
 #include <fstream>
+#include "ScreenFiller.hpp"
 
 using namespace gl;
 
@@ -40,15 +41,14 @@ public:
      * @details In this function the strings get concatinated to load a face of the cubemap.
      * Example "/textures/indoor/posx.hdr
      */
-
-    void generateCubeMap(const std::experimental::filesystem::path& cubeMapSourcePath,
-                         const std::string& extension = ".hdr", const std::string& posX = "posx",
-                         const std::string& negX = "negx", const std::string& posY = "posy",
-                         const std::string& negY = "negy", const std::string& posZ = "posz",
-                         const std::string& negZ = "negz");
+    void generateCubemap(const std::experimental::filesystem::path& cubeMapSourcePath,
+        const std::string& extension = ".hdr", const std::string& posX = "posx",
+        const std::string& negX = "negx", const std::string& posY = "posy",
+        const std::string& negY = "negy", const std::string& posZ = "posz",
+        const std::string& negZ = "negz");
 
     /** @brief Loads a cubemap from a source path.
-     * @param cubeMapSourcePath The Path where the cubemap faces reside.
+     * @param path The Path where the cubemap faces reside.
      * Example: ..."/textures/indoor/"
      * @param extension The file extension of the cubemap. Example: ".hdr".
      * This is also the thefault value for this parameter.
@@ -57,21 +57,19 @@ public:
      * @details In this function the strings get concatinated to load a face of the cubemap.
      * Example "/textures/indoor/posx.hdr
      */
-    void generateCubeMap(const std::experimental::filesystem::path& path, const std::string& extension,
-                         const std::array<std::string, 6>& faces);
+    void generateCubemap(const std::experimental::filesystem::path& path, const std::string& extension,
+        const std::array<std::string, 6>& faces);
 
     /** @brief Renders the cubemap into a cube.
      * Pass the uniform of the viewProj matrix to the shader.
-     * @param viewMatrix. Cuts off the translation part of the view matrix internaly.
-     * @param projMatrix Target projection matrix.
+     * @param camera A pointer to a Camrea object that is used to render the screen filling triangle
      */
-    void render(const glm::mat4& viewMatrix, const glm::mat4& projMatrix);
+    void renderAsSkybox(const std::shared_ptr<Camera>& camera);
 
     const Texture& getTexture() const;
 
 private:
-    Texture     m_texture{GL_TEXTURE_CUBE_MAP, GL_R11F_G11F_B10F, glm::ivec2(1, 1)};
-    Program     m_shaderProgram;
-    GLint       m_viewProjLoc;
-    VertexArray m_vao;
+    Texture                     m_texture{ GL_TEXTURE_CUBE_MAP, GL_R11F_G11F_B10F, glm::ivec2(1, 1) };
+    std::shared_ptr<Shader>     m_skyboxShader;
+    ScreenFiller                m_screenFiller;
 };

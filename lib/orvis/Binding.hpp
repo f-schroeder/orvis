@@ -2,29 +2,30 @@
 
 #include "glsp/glsp.hpp"
 
+
+enum class BufferBinding : int
+{
+    modelMatrices = 50,
+    cameraParameters = 51,
+    lights = 52,
+    materials = 53,
+    materialIndices = 54
+};
+
+enum class TextureBinding : int
+{
+    skybox = 50
+};
+
+enum class VertexAttributeLocation : int
+{
+    vertices = 0,
+    normals = 1,
+    texCoords = 2
+};
+
 namespace binding
 {
-    enum class BufferBinding : int
-    {
-        modelMatrices = 50,
-        cameraParameters = 51,
-        lights = 52,
-        materials = 53,
-        materialIndices = 54
-    };
-
-    enum class TextureBinding : int
-    {
-        skybox = 50
-    };
-
-    enum class VertexAttributeLocation : int
-    {
-        vertices = 0,
-        normals = 1,
-        texCoords = 2
-    };
-
     inline std::vector<glsp::definition> defaultShaderDefines = {
         glsp::definition("MODELMATRICES_BINDING", static_cast<int>(BufferBinding::modelMatrices)),
         glsp::definition("CAMERA_BINDING", static_cast<int>(BufferBinding::cameraParameters)),

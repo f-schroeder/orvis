@@ -1,4 +1,5 @@
 #include <glbinding/gl/gl.h>
+#include "orvis/Cubemap.hpp"
 using namespace gl;
 
 #include "orvis/Window.hpp"
@@ -15,6 +16,11 @@ int main()
 
     util::enableDebugCallback();
 
+    std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(70.f), static_cast<float>(width), static_cast<float>(height), 0.01f, 1000.f));
+
+    Cubemap skybox;
+    skybox.generateCubemap(util::resourcesPath / "textures" / "indoor");
+
     Timer timer;
 
     glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
@@ -25,6 +31,8 @@ int main()
 
         // --- RENDERING ---
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        cam->update(window);
+        skybox.renderAsSkybox(cam);
     
         timer.stop();
         timer.drawGuiWindow(window);
