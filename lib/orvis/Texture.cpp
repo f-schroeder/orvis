@@ -463,21 +463,23 @@ void Texture::generateMipmaps() const
     m_hasMipmaps = true;
 }
 
-void Texture::bind(GLuint binding) const
+void Texture::bind(std::variant<GLuint, TextureBinding> binding) const
 {
-    glBindSampler(binding, sampler().id());
-    glBindTextureUnit(binding, m_textureId);
+    const GLuint b = std::holds_alternative<GLuint>(binding) ? std::get<GLuint>(binding) : static_cast<GLuint>(std::get<TextureBinding>(binding));
+    glBindSampler(b, sampler().id());
+    glBindTextureUnit(b, m_textureId);
 }
 
-void Texture::bindImage(GLuint binding) const { bindImage(binding, GL_READ_WRITE, m_format); }
-void Texture::bindImage(GLuint binding, GLenum access, GLenum format) const
+void Texture::bindImage(std::variant<GLuint, TextureBinding> binding) const { bindImage(binding, GL_READ_WRITE, m_format); }
+void Texture::bindImage(std::variant<GLuint, TextureBinding> binding, GLenum access, GLenum format) const
 {
     bindImage(binding, 0, false, 0, access, format);
 }
-void Texture::bindImage(GLuint binding, int level, bool layered, int layer, GLenum access,
+void Texture::bindImage(std::variant<GLuint, TextureBinding> binding, int level, bool layered, int layer, GLenum access,
     GLenum format) const
 {
-    glBindImageTexture(binding, m_textureId, level, layered, layer, access, format);
+    const GLuint b = std::holds_alternative<GLuint>(binding) ? std::get<GLuint>(binding) : static_cast<GLuint>(std::get<TextureBinding>(binding));
+    glBindImageTexture(b, m_textureId, level, layered, layer, access, format);
 }
 
 GLuint Texture::id() const { return m_textureId; }

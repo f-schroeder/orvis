@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 #include "Createable.hpp"
+#include "Binding.hpp"
 
 using namespace gl;
 
@@ -304,14 +305,14 @@ public:
      * @param binding The binding point which can then be accessed by a GLSL layout binding
      * declaration.
      */
-    void bind(GLuint binding) const;
+    void bind(std::variant<GLuint, TextureBinding> binding) const;
 
     /**
      * @brief Binds the first mipmap level of the texture as a read-write enabled non-layered
      * image with its preset internal format.
      * @param binding The image binding.
      */
-    void bindImage(GLuint binding) const;
+    void bindImage(std::variant<GLuint, TextureBinding> binding) const;
 
     /**
      * @brief Binds the first mipmap level of the texture to as a non-layered image.
@@ -319,7 +320,7 @@ public:
      * @param access The access flag for the image.
      * @param format The binding format (e.g. GL_RGBA32F for rgba32f)
      */
-    void bindImage(GLuint binding, GLenum access, GLenum format) const;
+    void bindImage(std::variant<GLuint, TextureBinding> binding, GLenum access, GLenum format) const;
 
     /**
      * @brief Binds the texture as an image.
@@ -330,7 +331,7 @@ public:
      * @param access The access flag for the image.
      * @param format The binding format (e.g. GL_RGBA32F for rgba32f)
      */
-    void bindImage(GLuint binding, int level, bool layered, int layer, GLenum access,
+    void bindImage(std::variant<GLuint, TextureBinding> binding, int level, bool layered, int layer, GLenum access,
                    GLenum format) const;
 
     /** @return The texture id */

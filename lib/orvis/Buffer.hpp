@@ -3,7 +3,9 @@
 #include <array>
 #include <glbinding/gl/gl.h>
 #include <vector>
+#include <variant>
 #include "Createable.hpp"
+#include "Binding.hpp"
 
 using namespace gl;
 
@@ -27,28 +29,28 @@ public:
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
     template <size_t S>
-    explicit Buffer(const std::array<T, S>& data, GLbitfield flags = 0);
+    explicit Buffer(const std::array<T, S>& data, BufferStorageMask flags = GL_NONE_BIT);
 
     /**
      * @brief Create a buffer from an std::initializer_list.
      * @param data An initializer list to be stored in the buffer.
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
-    explicit Buffer(const std::initializer_list<T>& data, GLbitfield flags = 0);
+    explicit Buffer(const std::initializer_list<T>& data, BufferStorageMask flags = GL_NONE_BIT);
 
     /**
      * @brief Create a buffer from an std::vector.
      * @param data A vector to be stored in the buffer.
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
-    explicit Buffer(const std::vector<T>& data, GLbitfield flags = 0);
+    explicit Buffer(const std::vector<T>& data, BufferStorageMask flags = GL_NONE_BIT);
 
     /**
      * @brief Creates a buffer for one object.
      * @param data Object to be stored in the buffer.
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
-    explicit Buffer(const T& data, GLbitfield flags);
+    explicit Buffer(const T& data, BufferStorageMask flags);
 
     /**
      * @brief Creates a buffer from a pointer-size pair.
@@ -56,7 +58,7 @@ public:
      * @param count Number of elements contained in the data storage.
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
-    Buffer(const T* data, GLsizeiptr count, GLbitfield flags = 0);
+    Buffer(const T* data, GLsizeiptr count, BufferStorageMask flags = GL_NONE_BIT);
 
     /**
      * @brief Destroys the OpenGL buffer if not set to 0 by move operations.
@@ -150,7 +152,7 @@ public:
      * @param newSize The new element count in this buffer.
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
-    void resize(size_t newSize, GLbitfield flags = 0);
+    void resize(size_t newSize, BufferStorageMask flags = GL_NONE_BIT);
 
     /**
      * @brief Resize the buffer to the new size, using new storage flags and assign a
@@ -159,14 +161,14 @@ public:
      * @param element The element to assign to new positions.
      * @param flags Storage usage flags for glNamedBufferStorage.
      */
-    void resize(size_t newSize, const T& element, GLbitfield flags = 0);
+    void resize(size_t newSize, const T& element, BufferStorageMask flags = GL_NONE_BIT);
 
     /**
      * @brief Binds the buffer to an opengl target at a given binding index using glBindBufferRange.
      * @param target The OpenGL buffer binding target.
      * @param index The binding index to bind to.
      */
-    void bind(GLenum target, GLuint index) const;
+    void bind(GLenum target, std::variant<GLuint, BufferBinding> index) const;
 
     /**
      * @brief Binds the buffer to an opengl target at a given binding index using glBindBufferRange.
@@ -175,7 +177,7 @@ public:
      * @param offset The element index offset into the buffer.
      * @param count The number of elements the binding will refer to.
      */
-    void bind(GLenum target, GLuint index, GLintptr offset, GLsizeiptr count) const;
+    void bind(GLenum target, std::variant<GLuint, BufferBinding> index, GLintptr offset, GLsizeiptr count) const;
 
     /**
      * @brief Maps the buffer to a CPU accessible data pointer.
@@ -218,9 +220,9 @@ public:
     GLuint id() const;
 
 private:
-    GLbitfield m_storageFlags;
-    GLsizeiptr m_size;
-    GLuint     m_buffer;
+    BufferStorageMask   m_storageFlags;
+    GLsizeiptr          m_size;
+    GLuint              m_buffer;
 };
 
 #include "Buffer.inl"
