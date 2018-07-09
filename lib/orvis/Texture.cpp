@@ -385,6 +385,16 @@ void Texture::set(GLenum texParam, float value)
     generateHandle();
 }
 
+void Texture::set(GLenum texParam, GLenum value)
+{
+    if (m_overrideSampler)
+        return;
+    Sampler new_sampler = m_defaultSampler;
+    new_sampler.set(texParam, value);
+    m_defaultSampler = std::move(new_sampler);
+    generateHandle();
+}
+
 void Texture::set(const TexParamMap& parameters)
 {
     if (m_overrideSampler)

@@ -2,16 +2,18 @@
 
 struct Light
 {
-    vec3 color;             // all
-    int type;               // 0 directional, 1 point light, 2 spot light
-    vec3 position;          // spot, point
-	float cutOff;           // spot
-    vec3 direction;         // dir, spot
+    vec3 color;            // all
+    float cutOff;          // spot
+    vec3 position;         // spot, point    
+    int pcfKernelSize;     // all (used for SM filtering)
+    vec3 direction;        // dir, spot
+	int type;
 
 	//shadow mapping stuff
 	mat4 lightSpaceMatrix;
-	int pcfKernelSize;
-    uvec2 shadowMap; // can be sampler2DShadow or samplerCubeShadow
+	uvec2 shadowMap; // can be sampler2DShadow or samplerCubeShadow
+
+	float pad1, pad2; //padding (not used)
 };
 
 layout(std430, binding = LIGHTS_BINDING) readonly buffer LightBuffer

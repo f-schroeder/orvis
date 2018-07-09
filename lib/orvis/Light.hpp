@@ -1,31 +1,80 @@
 #pragma once
-#include "Createable.hpp"
 #include "glm/glm.hpp"
+#include <memory>
+#include "Texture.hpp"
+#include "FrameBuffer.hpp"
+#include "Shader.hpp"
+#include "Scene.hpp"
+
+enum class LightType : int
+{
+    directional = 0,
+    point = 1,
+    spot = 2
+};
 
 /**
  * @brief Struct containing lighting information passed to the shader
  * Currently only point lights!
  */
-struct Light : Createable<Light>
+class Light
 {
+public:
     /**
-     * @brief Initializes the light struct
+     * @brief Initializes a point light
      * @param position The position of the light source
      * @param color The color of the light source (clamped to positive values)
      */
-    Light(glm::vec3 position = glm::vec3(1.0f), glm::vec3 color = glm::vec3(1.0f));
-
-    glm::vec3 getPosition() const;
-    void      setPosition(glm::vec3 position);
+    static std::shared_ptr<Light> makePointLight(glm::vec3 position = glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3 color = glm::vec3(1.0f));
 
     /**
-     * @brief Sets the color of the light source (clamped to positive values)
+    * @brief Initializes a directional light
+    * @param direction The direction of the light source
+    * @param color The color of the light source (clamped to positive values)
+    */
+    static std::shared_ptr<Light> makeDirectionalLight(glm::vec3 direction = glm::normalize(glm::vec3(0.5f, -1.0f, -0.5f)), glm::vec3 color = glm::vec3(1.0f));
+
+    /**
+    * @brief Initializes a directional light
+    * @param position The position of the light source
+    * @param direction The direction of the light source
+    * @param color The color of the light source (clamped to positive values)
+    * @param cutOff The cut off of the light source (clamped to positive values)
+    */
+    static std::shared_ptr<Light> makeSpotLight(glm::vec3 position = glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3 direction = glm::normalize(glm::vec3(0.5f, -1.0f, -0.5f)), glm::vec3 color = glm::vec3(1.0f), float cutOff = glm::radians(25.0f));
+
+    /**
+     * @brief Updates the light space matrix and renders the shadow map
+     * @param scene The scene that is rendered into the shadow map
      */
-    void      setColor(glm::vec3 color);
-    glm::vec3 getColor() const;
+    void update(const std::shared_ptr<Scene>& scene);
+
+    glm::vec3 color;            // all
+    float cutOff;               // spot
+    glm::vec3 position;         // spot, point    
+    int pcfKernelSize = 1;      // all (used for SM filtering)
+    glm::vec3 direction;        // dir, spot  
 
 private:
-    uint32_t   m_data1            = 0; //pos.xy
-    uint32_t   m_data2            = 0; //pos.z, col.r
-    uint32_t   m_data3            = 0; //col.gb
+    struct ShadowMap
+    {
+        ShadowMap();
+
+        void render(const std::shared_ptr<Scene>& scene) const;
+
+        Texture shadowTexture{ GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, glm::ivec2(1024, 1024) };
+        FrameBuffer shadowFBO{ shadowTexture.getSize() };
+        Program shadowProgram;
+    };
+
+    Light(glm::vec3 position, glm::vec3 direction, glm::vec3 color, float cutOff, LightType type);
+
+    void recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene);
+
+    LightType m_type; // 0 directional, 1 point light, 2 spot light
+
+    //shadow mapping stuff
+    glm::mat4 m_lightSpaceMatrix = glm::mat4(1.0f);
+    GLuint64 m_shadowMapHandle = 0; // can be sampler2DShadow or samplerCubeShadow
+    std::unique_ptr<ShadowMap> m_shadowMap; // works as padding in glsl (is 64bit)
 };

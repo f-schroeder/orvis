@@ -210,6 +210,14 @@ public:
      */
     void set(GLenum texParam, float value);
 
+    /**
+    * @brief Calls set on the currently active texture sampler of this texture. This function will
+    * have to recreate the sampler.
+    * @param texParam The texture parameter.
+    * @param value its value.
+    */
+    void set(GLenum texParam, GLenum value);
+
     using TexParamMap = std::unordered_map<GLenum, std::variant<int, float>>;
     /**
      * @brief Sets all given parameters at once if the sampler is not overridden.
