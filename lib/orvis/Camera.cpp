@@ -10,7 +10,7 @@ Camera::Camera(glm::mat4 projection, glm::vec3 position, glm::vec3 target, glm::
     , m_sensitivity(SENSITIVTY)
     , m_lastTime(glfwGetTime())
     , m_projection(projection)
-    , m_cameraBuffer({ glm::vec4(position, 1.0f), glm::vec4(forward(), 0.0f), view(), projection, glm::inverse(projection * view()) }, GL_DYNAMIC_STORAGE_BIT)
+    , m_cameraBuffer({ glm::vec4(position, 1.0f), glm::vec4(forward(), 0.0f), view(), projection, glm::inverse(projection * glm::mat4(glm::mat3(view()))) }, GL_DYNAMIC_STORAGE_BIT)
 {
 }
 
@@ -85,7 +85,7 @@ void Camera::uploadToGpu()
 {
     const glm::mat4 v = view();
     const glm::mat4 p = projection();
-    const glm::mat4 invVP = glm::inverse(p * v);
+    const glm::mat4 invVP = glm::inverse(p * glm::mat4(glm::mat3(v)));
     m_cameraBuffer.assign({ glm::vec4(position, 1.0f), glm::vec4(forward(), 0.0f), v, p, invVP });
     m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
 }

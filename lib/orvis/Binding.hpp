@@ -17,7 +17,7 @@ enum class TextureBinding : int
     skybox = 50
 };
 
-enum class VertexAttributeLocation : int
+enum class VertexAttributeBinding : int
 {
     vertices = 0,
     normals = 1,
@@ -35,8 +35,8 @@ namespace binding
 
         glsp::definition("SKYBOX_BINDING", static_cast<int>(TextureBinding::skybox)),
 
-        glsp::definition("VERTEX_LAYOUT", static_cast<int>(VertexAttributeLocation::vertices)),
-        glsp::definition("NORMAL_LAYOUT", static_cast<int>(VertexAttributeLocation::normals)),
-        glsp::definition("TEXCOORD_LAYOUT", static_cast<int>(VertexAttributeLocation::texCoords))
+        glsp::definition("VERTEX_LAYOUT", static_cast<int>(VertexAttributeBinding::vertices)),
+        glsp::definition("NORMAL_LAYOUT", static_cast<int>(VertexAttributeBinding::normals)),
+        glsp::definition("TEXCOORD_LAYOUT", static_cast<int>(VertexAttributeBinding::texCoords))
     };
 }
