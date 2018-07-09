@@ -236,7 +236,7 @@ public:
      * @param type The pixel data type. (e.g. GL_FLOAT)
      * @param pixels The pixel data.
      */
-    void assign1D(int level, int offset, int size, GLenum format, GLenum type, const void* pixels);
+    void assign1D(int level, int offset, int size, GLenum format, GLenum type, const void* pixels) const;
 
     /**
      * @brief Assign pixel data to the whole texture.
@@ -244,7 +244,7 @@ public:
      * @param type The pixel data type. (e.g. GL_FLOAT)
      * @param pixels The pixel data.
      */
-    void assign1D(GLenum format, GLenum type, const void* pixels);
+    void assign1D(GLenum format, GLenum type, const void* pixels) const;
 
     /**
      * @brief Assign pixel data to a sub range of the texture.
@@ -256,7 +256,7 @@ public:
      * @param pixels The pixel data.
      */
     void assign2D(int level, glm::ivec2 offset, glm::ivec2 size, GLenum format, GLenum type,
-                  const void* pixels);
+                  const void* pixels) const;
 
     /**
      * @brief Assign pixel data to the whole texture.
@@ -264,7 +264,7 @@ public:
      * @param type The pixel data type. (e.g. GL_FLOAT)
      * @param pixels The pixel data.
      */
-    void assign2D(GLenum format, GLenum type, const void* pixels);
+    void assign2D(GLenum format, GLenum type, const void* pixels) const;
 
     /**
      * @brief Assign pixel data to a sub range of the texture.
@@ -276,7 +276,7 @@ public:
      * @param pixels The pixel data.
      */
     void assign3D(int level, glm::ivec3 offset, glm::ivec3 size, GLenum format, GLenum type,
-                  const void* pixels);
+                  const void* pixels) const;
 
     /**
      * @brief Assign pixel data to the whole texture.
@@ -284,12 +284,13 @@ public:
      * @param type The pixel data type. (e.g. GL_FLOAT)
      * @param pixels The pixel data.
      */
-    void assign3D(GLenum format, GLenum type, const void* pixels);
+    void assign3D(GLenum format, GLenum type, const void* pixels) const;
 
     /**
      * @brief Loads the data from the texture memory into a vector.
      * @tparam T The texture data type which will be stored in the vector.
      * @param format The data format (e.g. GL_RGBA)
+     * @param level The level of the texture
      * @return A vector containing the pixel data.
      */
     template <typename T>
@@ -359,7 +360,6 @@ public:
 
     /**
      * @brief Clears the whole first level of the texture to the given data value.
-     * @param level The texture mipmap level to clear.
      * @param format The format of the given data (e.g. GL_RGBA for 4 components).
      * @param type The type of the given data (e.g. GL_FLOAT for float data).
      * @param data The clear data (a pointer to a 1 to 4 component vector.

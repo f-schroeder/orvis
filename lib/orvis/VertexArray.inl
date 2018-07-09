@@ -1,3 +1,4 @@
+#pragma once
 
 template <typename T>
 void VertexArray::setVertexBuffer(const Buffer<T>& buffer, std::variant<GLuint, VertexAttributeBinding> binding,

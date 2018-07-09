@@ -21,7 +21,7 @@ std::vector<T> Texture::data(GLenum format, int level) const
     else if constexpr(std::is_same_v<T, uint8_t>)
         type = GL_UNSIGNED_BYTE;
 
-    size_t components = 1;
+    size_t components;
     switch (format)
     {
     case GL_RED:

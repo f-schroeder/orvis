@@ -13,25 +13,25 @@ public:
     virtual ~Timer();
 
     /**
-     * \brief starts the GPU timer
+     * @brief starts the GPU timer
      */
     void start() const;
 
     /**
-     * \brief stops the GPU timer
+     * @brief stops the GPU timer
      */
     void stop();
 
     /**
-     * \brief draws an imgui window with the frametime and a graph
-     * \param window 
+     * @brief draws an imgui window with the frametime and a graph
+     * @param window 
      */
     void drawGuiWindow(GLFWwindow* window);
 
 	/**
-	* \brief returns conent for imgui with the frametime and a graph
-	* \param window
-	* \param compact show compact gui in one line
+	* @brief returns conent for imgui with the frametime and a graph
+	* @param window
+	* @param compact show compact gui in one line
 	*/
 	void drawGuiContent(GLFWwindow* window, bool compact = false);
 

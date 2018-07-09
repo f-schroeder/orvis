@@ -1,6 +1,5 @@
 #include "Texture.hpp"
 
-#include <iostream>
 #include "Util.hpp"
 
 Sampler::Sampler()
@@ -14,7 +13,7 @@ Sampler::Sampler()
     set(GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     set(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     set(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //set(GL_TEXTURE_MAX_ANISOTROPY, 16.f);
+    set(GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.f);
 }
 Sampler::~Sampler()
 {
@@ -31,6 +30,8 @@ Sampler::Sampler(const Sampler& other)
             set(var.first, std::get<int>(var.second));
         else if (std::holds_alternative<float>(var.second))
             set(var.first, std::get<float>(var.second));
+        else if (std::holds_alternative<GLenum>(var.second))
+            set(var.first, std::get<GLenum>(var.second));
     }
 }
 
@@ -53,6 +54,8 @@ Sampler& Sampler::operator=(const Sampler& other)
             set(var.first, std::get<int>(var.second));
         else if (std::holds_alternative<float>(var.second))
             set(var.first, std::get<float>(var.second));
+        else if (std::holds_alternative<GLenum>(var.second))
+            set(var.first, std::get<GLenum>(var.second));
     }
     return *this;
 }
@@ -121,7 +124,6 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, int levels)
 Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, int levels)
     : Texture(target)
 {
-    GLenum err;
     m_format = format;
     m_size = size;
     m_levels = levels == -1
@@ -267,7 +269,7 @@ Texture::Texture(Texture&& other) noexcept
     m_samples = other.m_samples;
     m_overrideSampler = std::move(other.m_overrideSampler);
     m_hasMipmaps = other.m_hasMipmaps;
-    m_imageHandleTree = std::move(m_imageHandleTree);
+    m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
     other.m_textureId = 0;
 }
@@ -286,7 +288,7 @@ Texture& Texture::operator=(Texture&& other) noexcept
     m_samples = other.m_samples;
     m_overrideSampler = std::move(other.m_overrideSampler);
     m_hasMipmaps = other.m_hasMipmaps;
-    m_imageHandleTree = std::move(m_imageHandleTree);
+    m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
     other.m_textureId = 0;
     return *this;
@@ -396,9 +398,9 @@ void Texture::set(const TexParamMap& parameters)
         {
         }
 
-        void operator()(float value) { m_sampler.set(m_tparam, value); }
-        void operator()(int value) { m_sampler.set(m_tparam, value); }
-        void operator()(GLenum value) { m_sampler.set(m_tparam, value); }
+        void operator()(float value) const { m_sampler.set(m_tparam, value); }
+        void operator()(int value) const { m_sampler.set(m_tparam, value); }
+        void operator()(GLenum value) const { m_sampler.set(m_tparam, value); }
 
     private:
         Sampler & m_sampler;
@@ -412,32 +414,32 @@ void Texture::set(const TexParamMap& parameters)
 }
 
 void Texture::assign1D(int level, int offset, int size, GLenum format, GLenum type,
-    const void* pixels)
+    const void* pixels) const
 {
     glTextureSubImage1D(m_textureId, level, offset, size, format, type, pixels);
     m_hasMipmaps = false;
 }
 
-void Texture::assign1D(GLenum format, GLenum type, const void* pixels)
+void Texture::assign1D(GLenum format, GLenum type, const void* pixels) const
 {
     assign1D(0, 0, m_size.x, format, type, pixels);
 }
 
 void Texture::assign2D(int level, glm::ivec2 offset, glm::ivec2 size, GLenum format, GLenum type,
-    const void* pixels)
+    const void* pixels) const
 {
     glTextureSubImage2D(
         m_textureId, level, offset.x, offset.y, size.x, size.y, format, type, pixels);
     m_hasMipmaps = false;
 }
 
-void Texture::assign2D(GLenum format, GLenum type, const void* pixels)
+void Texture::assign2D(GLenum format, GLenum type, const void* pixels) const
 {
     assign2D(0, { 0, 0 }, glm::ivec2(m_size), format, type, pixels);
 }
 
 void Texture::assign3D(int level, glm::ivec3 offset, glm::ivec3 size, GLenum format, GLenum type,
-    const void* pixels)
+    const void* pixels) const
 {
     glTextureSubImage3D(m_textureId,
         level,
@@ -452,7 +454,7 @@ void Texture::assign3D(int level, glm::ivec3 offset, glm::ivec3 size, GLenum for
         pixels);
     m_hasMipmaps = false;
 }
-void Texture::assign3D(GLenum format, GLenum type, const void* pixels)
+void Texture::assign3D(GLenum format, GLenum type, const void* pixels) const
 {
     assign3D(0, { 0, 0, 0 }, m_size, format, type, pixels);
 }

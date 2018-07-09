@@ -1,10 +1,7 @@
 #pragma once
 #include "Camera.hpp"
-#include "Buffer.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "VertexArray.hpp"
-#include <fstream>
 #include "ScreenFiller.hpp"
 
 using namespace gl;

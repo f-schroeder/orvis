@@ -3,11 +3,12 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <utility>
 #include "Util.hpp"
 
 std::shared_ptr<ShaderFile> ShaderFile::load(const std::experimental::filesystem::path& path)
 {
-    auto absolute_path = util::shadersPath / path.string();
+    const auto absolute_path = util::shadersPath / path.string();
 
     std::experimental::filesystem::path realPath;
     if(std::experimental::filesystem::exists(path))
@@ -34,8 +35,8 @@ std::shared_ptr<ShaderFile> ShaderFile::load(const std::experimental::filesystem
     }
 }
 
-ShaderFile::ShaderFile(const std::experimental::filesystem::path& path)
-        : m_path(path)
+ShaderFile::ShaderFile(std::experimental::filesystem::path path)
+        : m_path(std::move(path))
 {
     reload();
 }
@@ -62,7 +63,7 @@ void                                                     ShaderFile::reload()
 
 const std::string& ShaderFile::contents() const { return m_source; }
 
-Shader::Shader(GLenum type, const ShaderSource& source, std::vector<glsp::definition> definitions)
+Shader::Shader(const GLenum type, const ShaderSource& source, const std::vector<glsp::definition>& definitions)
         : Shader(type, std::vector<ShaderSource>{source}, definitions)
 {
 }
@@ -70,7 +71,7 @@ Shader::Shader(GLenum type, const ShaderSource& source, std::vector<glsp::defini
 Shader::Shader(GLenum type, const std::vector<ShaderSource>& sources, std::vector<glsp::definition> definitions)
     : m_type(type)
     , m_handle(glCreateShader(m_type))
-    , m_definitions(definitions)
+    , m_definitions(std::move(definitions))
 {
     for(const auto& source : sources)
         m_sources.emplace_back(source);
@@ -90,8 +91,8 @@ Shader::Shader(const Shader& other)
     reload();
 }
 
-Shader::Shader(Shader&& other)
-        : m_type(other.type())
+Shader::Shader(Shader&& other) noexcept
+    : m_type(other.type())
         , m_handle(other.id())
         , m_sources(std::move(other.m_sources))
 {
@@ -108,7 +109,7 @@ Shader& Shader::operator=(const Shader& other)
     return *this;
 }
 
-Shader& Shader::operator=(Shader&& other)
+Shader& Shader::operator=(Shader&& other) noexcept
 {
     if(glIsShader(m_handle))
         glDeleteShader(m_handle);
@@ -199,7 +200,7 @@ Program::~Program()
         glDeleteProgram(m_handle);
 
     std::unique_lock<std::mutex> lock(m_programMutex);
-    if(auto it = std::find(m_allPrograms.begin(), m_allPrograms.end(), this);
+    if(const auto it = std::find(m_allPrograms.begin(), m_allPrograms.end(), this);
        it != m_allPrograms.end())
         m_allPrograms.erase(it);
 }
@@ -279,11 +280,11 @@ Program::Program(const Program& other)
     for(const auto& shader : other.m_shaders)
         attach(shader.second);
     if(other.m_linked)
-        link();
+        link() ? 0 : throw std::runtime_error("Failed to link program!");
 }
 
-Program::Program(Program&& other)
-        : m_handle(other.m_handle)
+Program::Program(Program&& other) noexcept
+    : m_handle(other.m_handle)
         , m_shaders(std::move(other.m_shaders))
         , m_linked(other.m_linked)
 {
@@ -299,11 +300,11 @@ Program& Program::operator=(const Program& other)
     for(const auto& shader : other.m_shaders)
         attach(shader.second);
     if(other.m_linked)
-        link();
+        link() ? 0 : throw std::runtime_error("Failed to link program!");
     return *this;
 }
 
-Program& Program::operator=(Program&& other)
+Program& Program::operator=(Program&& other) noexcept
 {
     if(glIsProgram(m_handle))
         glDeleteProgram(m_handle);
@@ -317,7 +318,7 @@ Program& Program::operator=(Program&& other)
 void Program::use() const
 {
     if(!m_linked)
-        link();
+        link() ? 0 : throw std::runtime_error("Failed to link program!");
     glUseProgram(m_handle);
 }
 GLuint Program::id() const { return m_handle; }

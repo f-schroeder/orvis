@@ -1,11 +1,8 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <vector>
-
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "Createable.hpp"
 #include "Buffer.hpp"
 

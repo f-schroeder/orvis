@@ -2,7 +2,6 @@
 
 #include "glsp/glsp.hpp"
 
-
 enum class BufferBinding : int
 {
     modelMatrices = 50,

@@ -53,7 +53,7 @@ public:
     /**
      * @brief Checks the current state of the framebuffer (i.e. looks for OpenGL errors).
      */
-    bool check();
+    static bool check();
 
     /**
      * @brief Resizes the framebuffer and all its currently attached Textures.
@@ -70,7 +70,7 @@ public:
     /**
      * @brief Unbinds the framebuffer (i.e. binds the default one).
      */
-    void unbind() const;
+    static void unbind();
 
     /**
      * @brief Gets the OpenGL-ID of the framebuffer object.

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Util.hpp"
 #include <glbinding/gl/gl.h>
 #include <mutex>
 #include <string>
@@ -9,6 +8,8 @@
 #include <vector>
 #include "Binding.hpp"
 #include "Createable.hpp"
+
+using namespace gl;
 
 /** @brief A file handle for shader source files.
  * @details When reloading, it uses the last file write time of the
@@ -39,7 +40,7 @@ public:
     const std::string& contents() const;
 
 private:
-    explicit ShaderFile(const std::experimental::filesystem::path& path);
+    explicit ShaderFile(std::experimental::filesystem::path path);
     struct FileContent
     {
         std::shared_ptr<ShaderFile> baseHandle;
@@ -66,7 +67,7 @@ public:
      * @param source A Shader source string or file-pointer to the shader source.
      * @param definitions Defines that are added to the shader
      */
-    Shader(GLenum type, const ShaderSource& source, std::vector<glsp::definition> definitions = binding::defaultShaderDefines);
+    Shader(GLenum type, const ShaderSource& source, const std::vector<glsp::definition>& definitions = binding::defaultShaderDefines);
 
     /** @brief Takes in multiple source files and strings and compiles a shader from it.
      * @param type The OpenGL shader type. Can be one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
@@ -90,7 +91,7 @@ public:
      * type and sources. The old old move source shader's ID will be invalidated to 0 so it does not
      * delete the OpenGL shader associated with the ID.
      */
-    Shader(Shader&& other);
+    Shader(Shader&& other) noexcept;
 
     /** @brief When copy-assigning shaders, the copy target will be a new shader with the same ID as
      * it held before copying, using the same type, copies of the source strings, and the same file
@@ -104,7 +105,7 @@ public:
      * delete the OpenGL shader associated with the ID. The old move target shader will be deleted
      * if not already invalidated.
      */
-    Shader& operator=(Shader&& other);
+    Shader& operator=(Shader&& other) noexcept;
 
     /** @brief Reloads all ShaderFile pointers assigned to this shader and recompiles it.
      * @param checkStatus If set to true, the shader compilation status will be fetched and a log is
@@ -157,7 +158,7 @@ public:
      * ID will be used in the new copy and the old one will be invalidated to 0 to prohibit
      * deletion of the then used ID.
      */
-    Program(Program&& other);
+    Program(Program&& other) noexcept;
 
     /** @brief When copy-assigning a program, all shader pointers from the other one are attached.
      * If the other program has been linked before, the copy will be linked too. The old program ID
@@ -173,7 +174,7 @@ public:
      * deletion of the then used ID.
      * If the move target had a valid ID before, it will be deleted.
      */
-    Program& operator=(Program&& other);
+    Program& operator=(Program&& other) noexcept;
 
     /** @brief Creates a new shader and attaches it to the program.
      * @param type The OpenGL shader type. Can be one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,

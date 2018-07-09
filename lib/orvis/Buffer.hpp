@@ -220,9 +220,9 @@ public:
     GLuint id() const;
 
 private:
-    BufferStorageMask   m_storageFlags;
-    GLsizeiptr          m_size;
-    GLuint              m_buffer;
+    BufferStorageMask   m_storageFlags = GL_NONE_BIT;
+    GLsizeiptr          m_size = 0;
+    GLuint              m_buffer = GL_INVALID_INDEX;
 };
 
 #include "Buffer.inl"

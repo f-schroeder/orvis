@@ -97,7 +97,7 @@ void FrameBuffer::resize(glm::ivec2 size)
 
 void FrameBuffer::bind() const { glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); }
 
-void FrameBuffer::unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void FrameBuffer::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 GLuint FrameBuffer::id() const { return m_fbo; }
 

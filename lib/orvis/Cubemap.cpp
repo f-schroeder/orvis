@@ -25,7 +25,7 @@ void Cubemap::generateCubemap(const std::experimental::filesystem::path& cubeMap
 
     struct deleter
     {
-        void operator()(float* f) { stbi_image_free(f); }
+        void operator()(float* f) const { stbi_image_free(f); }
     };
     using Data = std::unique_ptr<float, deleter>;
 
