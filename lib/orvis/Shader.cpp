@@ -130,14 +130,18 @@ bool Shader::reload(bool checkStatus)
         void operator()(std::string& str)
         {
             std::string processedSource = glsp::preprocess_source(str, "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(parent.id()), { util::shadersPath }, parent.m_definitions).contents;
-            begin_pointers.emplace_back(processedSource.c_str());
+            const auto cStrSource = new char[processedSource.length()];
+            strcpy(cStrSource, processedSource.c_str());
+            begin_pointers.emplace_back(cStrSource);
             begin_pointer_lengths.emplace_back(static_cast<int>(processedSource.length()));
         }
         void operator()(std::shared_ptr<ShaderFile>& file)
         {
             file->reload();
             std::string processedSource = glsp::preprocess_source(file->contents(), "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(parent.id()), { util::shadersPath }, parent.m_definitions).contents;
-            begin_pointers.emplace_back(processedSource.c_str());
+            const auto cStrSource = new char[processedSource.length()];
+            strcpy(cStrSource, processedSource.c_str());
+            begin_pointers.emplace_back(cStrSource);
             begin_pointer_lengths.emplace_back(static_cast<int>(processedSource.length()));
         }
         Shader&                  parent;
@@ -146,7 +150,7 @@ bool Shader::reload(bool checkStatus)
     } inflater(*this);
 
     for(auto&& source : m_sources)
-        std::visit(inflater, source);
+        std::visit(inflater, source);   
 
     glShaderSource(m_handle,
                    static_cast<GLsizei>(inflater.begin_pointers.size()),
