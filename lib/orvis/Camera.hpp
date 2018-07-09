@@ -66,6 +66,15 @@ public:
     void uploadToGpu();
 
     /**
+    * @brief Puts camera data into a GpuCamera struct and uploads it to the GPU.
+    * Only takes values from the provided matrices instead of using class-members.
+    * Also binds the buffer to binding::BufferBinding::cameraParameters
+    * @param view The view matrix
+    * @param proj The projection matrix
+    */
+    void uploadToGpu(const glm::mat4& view, const glm::mat4& proj);
+
+    /**
      * @brief Resets camera to starting position and orientation
      */
     void reset();

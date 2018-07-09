@@ -90,6 +90,13 @@ void Camera::uploadToGpu()
     m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
 }
 
+void Camera::uploadToGpu(const glm::mat4& view, const glm::mat4& proj)
+{
+    const glm::mat4 invVP = glm::inverse(proj * glm::mat4(glm::mat3(view)));
+    m_cameraBuffer.assign({view[3], glm::inverse(view)[2], view, proj, invVP });
+    m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
+}
+
 void Camera::reset()
 {
     position = m_startPosition;
