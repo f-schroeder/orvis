@@ -1,6 +1,6 @@
 
 template <typename T>
-void VertexArray::setVertexBuffer(const Buffer<T>& buffer, GLuint binding,
+void VertexArray::setVertexBuffer(const Buffer<T>& buffer, std::variant<GLuint, VertexAttributeBinding> binding,
     GLintptr offset, GLsizei stride)
 {
     setVertexBuffer(buffer.id(), binding, offset, stride);

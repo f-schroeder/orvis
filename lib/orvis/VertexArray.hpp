@@ -31,16 +31,16 @@ public:
      * @param offset The relative byte offset within the element stride. (e.g. the byte offset of a
      * Vertex::position attribute in the Vertex struct)
      */
-    void format(GLuint attribute, GLint components, GLenum type, bool normalized, GLintptr offset);
+    void format(std::variant<GLuint, VertexAttributeBinding> attribute, GLint components, GLenum type, bool normalized, GLintptr offset);
 
     /**
      * @brief Specifies a vertex buffer binding for the given attribute. Afterwards, the attribute
      * will be read from the GL_ARRAY_BUFFER bound to the specified binding (e.g. with
      * VertexArray::setVertexBuffer).
      * @param attribute The attribute index.
-     * @param binding The target buffer binding.
+     * @param binding The target buffer binding. If it is GL_INVALID_INDEX, the same index as attribute is used
      */
-    void binding(GLuint attribute, GLuint binding);
+    void binding(std::variant<GLuint, VertexAttributeBinding> attribute, std::variant<GLuint, VertexAttributeBinding> binding = GL_INVALID_INDEX);
 
     /**
      * @brief Binds a vertex buffer at the given binding point which can then be read by all
@@ -53,8 +53,8 @@ public:
      * between the element start positions).
      */
     template <typename T>
-    void setVertexBuffer(const Buffer<T>& buffer, GLuint binding, GLintptr offset = 0,
-                         GLsizei stride = static_cast<GLsizei>(sizeof(T)));
+    void setVertexBuffer(const Buffer<T>& buffer, std::variant<GLuint, VertexAttributeBinding> binding = 0, GLintptr offset = 0,
+        GLsizei stride = static_cast<GLsizei>(sizeof(T)));
 
     /**
      * @brief Binds a vertex buffer at the given binding point which can then be read by all
@@ -66,7 +66,7 @@ public:
      * @param stride The byte size of each vertex element in this buffer. (Or the byte distance
      * between the element start positions).
      */
-    void setVertexBuffer(const GLuint& buffer, GLuint binding, GLintptr offset, GLsizei stride);
+    void setVertexBuffer(const GLuint& buffer, std::variant<GLuint, VertexAttributeBinding> binding, GLintptr offset, GLsizei stride);
 
     /**
      * @brief Binds an element buffer to this vertex array for indexed rendering.
@@ -95,29 +95,29 @@ private:
     /** @brief An attribute struct for caching attributes needed for copying VAOs. */
     struct Attribute
     {
-        GLuint   attribute;
-        GLint    components;
-        GLenum   type;
-        bool     normalized;
-        GLintptr offset;
+        GLuint   attribute = 0;
+        GLint    components = 0;
+        GLenum   type = GL_INVALID_ENUM;
+        bool     normalized = false;
+        GLintptr offset = 0;
     };
 
     /** @brief A binding description for caching bindings needed for copying VAOs. */
     struct Bindings
     {
-        GLuint                                         buffer;
-        GLintptr                                       offset;
-        GLsizei                                        stride;
+        GLuint                                         buffer = GL_INVALID_INDEX;
+        GLintptr                                       offset = 0;
+        GLsizei                                        stride = 0;
         std::vector<std::reference_wrapper<Attribute>> attributes;
     };
 
-    using AttribMap  = std::unordered_map<GLuint, std::unique_ptr<Attribute>>;
+    using AttribMap = std::unordered_map<GLuint, std::unique_ptr<Attribute>>;
     using BindingMap = std::unordered_map<GLuint, Bindings>;
 
-    GLuint     m_id;         //!< The VAO ID.
+    GLuint     m_id = GL_INVALID_INDEX;         //!< The VAO ID.
     AttribMap  m_attributes; //!< Maps attribute indices to their set attributes.
     BindingMap m_bindings;   //!< Maps buffer bindings to a vector of referencing attributes.
-    GLuint     m_elementArrayBuffer;
+    GLuint     m_elementArrayBuffer = GL_INVALID_INDEX;
 };
 
 #include "VertexArray.inl"
