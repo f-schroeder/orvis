@@ -7,6 +7,7 @@
 #include <sstream>
 #include <future>
 #include <glbinding/Binding.h>
+#include <glm/glm.hpp>
 
 // Execute on dedicated graphics card if possible
 #if defined(WIN32) || defined(_WIN32)
@@ -30,6 +31,27 @@ namespace util
     std::string convertGLubyteToString(const GLubyte* content)
     {
         return std::string(reinterpret_cast<const char*>(content));
+    }
+
+    glm::vec4 unpackHalf4x16(glm::uvec2 v)
+    {
+        return glm::vec4(glm::unpackHalf2x16(v.x), glm::unpackHalf2x16(v.y));
+    }
+
+    glm::uvec2 packHalf4x16(glm::vec4 v)
+    {
+        return glm::uvec2(glm::packHalf2x16(glm::vec2(v.x, v.y)), glm::packHalf2x16(glm::vec2(v.z, v.w)));
+    }
+
+    glm::uvec2 uint64ToUvec2(GLuint64 v)
+    {
+        return glm::uvec2(v & 0xFFFFFFFF00000000, v & 0x00000000FFFFFFFF);
+    }
+
+    GLuint64 uvec2ToUitn64(glm::uvec2 v)
+    {
+        GLuint64 x = v.x;
+        return (x << 32) | v.y;
     }
 
     void printOpenGLInfo()

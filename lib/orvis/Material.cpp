@@ -1,54 +1,113 @@
 #include "Material.hpp"
+#include "Util.hpp"
 
-Material::Material(glm::vec3 color, float roughness, float metalness, float ior)
+Material::Material(glm::vec3 color, float roughness, float metallic, float ior)
 {
-    color     = glm::max(glm::vec3(0.0f), color);
-    roughness = glm::clamp(roughness, 0.0f, 1.0f);
-    metalness = glm::clamp(metalness, 0.0f, 1.0f);
-    ior       = glm::max(0.0f, ior);
-    m_data1 = glm::packHalf2x16(glm::vec2(color.x, color.y));
-    m_data2 = glm::packHalf2x16(glm::vec2(color.z, roughness));
-    m_data3 = glm::packHalf2x16(glm::vec2(metalness, ior));
+    setColor(color);
+    setRoughness(roughness);
+    setMetallic(metallic);
+    setIOR(ior);
 }
 
 glm::vec3 Material::getColor() const
 {
-    return glm::vec3(glm::unpackHalf2x16(m_data1), glm::unpackHalf2x16(m_data2).x);
+    if (m_isTextureBitset[MAT_COLOR_BIT])
+    {
+        std::cout << "WARNING: Attempting to get material color although it is a texture\n";
+        return glm::vec3(-1.0f);
+    }
+    else
+    {
+        return util::unpackHalf4x16(m_albedo);
+    }
 }
 
-void Material::setColor(glm::vec3 color)
+void Material::setColor(std::variant<glm::vec3, std::shared_ptr<Texture>> color)
 {
-    color                 = glm::max(glm::vec3(0.0f), color);
-    const float roughness = getRoughness();
-    m_data1 = glm::packHalf2x16(glm::vec2(color.x, color.y));
-    m_data2 = glm::packHalf2x16(glm::vec2(color.z, roughness));
+    if (std::holds_alternative<glm::vec3>(color))
+    {
+        m_albedo = util::packHalf4x16(glm::vec4(glm::max(glm::vec3(0.0f), std::get<glm::vec3>(color)), 1.0f));
+        m_isTextureBitset[MAT_COLOR_BIT] = false;
+    }
+    else
+    {
+        m_albedo = util::uint64ToUvec2(std::get<std::shared_ptr<Texture>>(color)->handle());
+        m_isTextureBitset[MAT_COLOR_BIT] = true;
+    }
 }
 
-float Material::getRoughness() const { return glm::unpackHalf2x16(m_data2).y; }
-
-void Material::setRoughness(float roughness)
+void Material::setNormalMap(const std::shared_ptr<Texture>& normalMap)
 {
-    roughness        = glm::clamp(roughness, 0.0f, 1.0f);
-    const float colB = glm::unpackHalf2x16(m_data2).x;
-    m_data2    = glm::packHalf2x16(glm::vec2(colB, roughness));
+    m_normal = normalMap->handle();
+    m_isTextureBitset[MAT_NORMAL_BIT] = true;
 }
 
-float Material::getMetalness() const
-{ return glm::unpackHalf2x16(m_data3).x; }
-
-void Material::setMetalness(float metalness)
+void Material::setAoMap(const std::shared_ptr<Texture>& aoMap)
 {
-    metalness       = glm::clamp(metalness, 0.0f, 1.0f);
-    const float ior = getIOR();
-    m_data3         = glm::packHalf2x16(glm::vec2(metalness, ior));
+    m_ao = aoMap->handle();
+    m_isTextureBitset[MAT_AO_BIT] = true;
+}
+
+float Material::getRoughness() const
+{
+    if (m_isTextureBitset[MAT_ROUGHNESS_BIT])
+    {
+        std::cout << "WARNING: Attempting to get material roughness although it is a texture\n";
+        return -1.0f;
+    }
+    else
+    {
+        return glm::uintBitsToFloat(m_roughness.x);
+    }
+}
+
+void Material::setRoughness(std::variant<float, std::shared_ptr<Texture>> roughness)
+{    
+    if (std::holds_alternative<float>(roughness))
+    {
+        m_roughness.x = glm::floatBitsToUint(glm::clamp(std::get<float>(roughness), 0.0f, 1.0f));
+        m_isTextureBitset[MAT_ROUGHNESS_BIT] = false;
+    }
+    else
+    {
+        m_roughness = util::uint64ToUvec2(std::get<std::shared_ptr<Texture>>(roughness)->handle());
+        m_isTextureBitset[MAT_ROUGHNESS_BIT] = true;
+    }
+}
+
+float Material::getMetallic() const
+{
+    if (m_isTextureBitset[MAT_METALLIC_BIT])
+    {
+        std::cout << "WARNING: Attempting to get material metallic although it is a texture\n";
+        return -1.0f;
+    }
+    else
+    {
+        return glm::uintBitsToFloat(m_metallic.x);
+    }
+}
+
+void Material::setMetallic(std::variant<float, std::shared_ptr<Texture>> metallic)
+{
+    if (std::holds_alternative<float>(metallic))
+    {
+        m_metallic.x = glm::floatBitsToUint(glm::clamp(std::get<float>(metallic), 0.0f, 1.0f));
+        m_isTextureBitset[MAT_METALLIC_BIT] = false;
+    }
+    else
+    {
+        m_metallic = util::uint64ToUvec2(std::get<std::shared_ptr<Texture>>(metallic)->handle());
+        m_isTextureBitset[MAT_METALLIC_BIT] = true;
+    }
 }
 
 float Material::getIOR() const
-{ return glm::unpackHalf2x16(m_data3).y; }
+{
+    return m_ior;
+}
 
 void Material::setIOR(float ior)
 {
-    ior                   = glm::max(0.0f, ior);
-    const float metalness = getMetalness();
-    m_data3               = glm::packHalf2x16(glm::vec2(metalness, ior));
+    m_ior = glm::max(0.0f, ior);
 }

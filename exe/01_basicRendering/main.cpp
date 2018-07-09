@@ -16,7 +16,7 @@ int main()
 
     util::enableDebugCallback();
 
-    std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(70.f), static_cast<float>(width), static_cast<float>(height), 0.01f, 1000.f));
+    std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.01f, 1000.f));
 
     Cubemap skybox;
     skybox.generateCubemap(util::resourcesPath / "textures" / "indoor");
