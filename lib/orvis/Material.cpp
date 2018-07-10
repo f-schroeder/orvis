@@ -1,7 +1,7 @@
 #include "Material.hpp"
 #include "Util.hpp"
 
-Material::Material(glm::vec3 color, float roughness, float metallic, float ior)
+Material::Material(glm::vec4 color, float roughness, float metallic, float ior)
 {
     setColor(color);
     setRoughness(roughness);
@@ -9,12 +9,12 @@ Material::Material(glm::vec3 color, float roughness, float metallic, float ior)
     setIOR(ior);
 }
 
-glm::vec3 Material::getColor() const
+glm::vec4 Material::getColor() const
 {
     if (m_isTextureBitset[MAT_COLOR_BIT])
     {
         std::cout << "WARNING: Attempting to get material color although it is a texture\n";
-        return glm::vec3(-1.0f);
+        return glm::vec4(-1.0f);
     }
     else
     {
@@ -22,11 +22,11 @@ glm::vec3 Material::getColor() const
     }
 }
 
-void Material::setColor(std::variant<glm::vec3, std::shared_ptr<Texture>> color)
+void Material::setColor(std::variant<glm::vec4, std::shared_ptr<Texture>> color)
 {
-    if (std::holds_alternative<glm::vec3>(color))
+    if (std::holds_alternative<glm::vec4>(color))
     {
-        m_albedo = util::packHalf4x16(glm::vec4(glm::max(glm::vec3(0.0f), std::get<glm::vec3>(color)), 1.0f));
+        m_albedo = util::packHalf4x16(glm::max(glm::vec4(0.0f), std::get<glm::vec4>(color)));
         m_isTextureBitset[MAT_COLOR_BIT] = false;
     }
     else

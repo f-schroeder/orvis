@@ -29,14 +29,14 @@ public:
      * @param metallic The metalness of the material (clamped to [0,1])
      * @param ior Index of Refraction (clamped to positive values)
      */
-    Material(glm::vec3 color = glm::vec3(1.0f), float roughness = 0.5f, float metallic = 0.0f,
+    Material(glm::vec4 color = glm::vec4(1.0f), float roughness = 0.5f, float metallic = 0.0f,
         float ior = 1.5f);
 
     /**
      * @brief Sets the color of the material (clamped to positive values if vec3)
      */
-    void      setColor(std::variant<glm::vec3, std::shared_ptr<Texture>> color);
-    glm::vec3 getColor() const;
+    void      setColor(std::variant<glm::vec4, std::shared_ptr<Texture>> color);
+    glm::vec4 getColor() const;
 
     /**
     * @brief Sets the normal map of the material
