@@ -1,14 +1,15 @@
 #pragma once
+
 #include "Bounds.hpp"
 #include "Light.hpp"
 #include "Mesh.hpp"
 #include "Camera.hpp"
 
-class Light; // forward declaration
-
 class Scene
 {
 public:
+    Scene(const std::experimental::filesystem::path& filename);
+
     void render();
     const Bounds& getBoundingBox();
 
