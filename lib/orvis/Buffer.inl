@@ -54,8 +54,8 @@ Buffer<T>::Buffer(const Buffer& other)
 }
 template <typename T>
 Buffer<T>::Buffer(Buffer&& other) noexcept
-        : m_size(other.m_size)
-        , m_storageFlags(other.m_storageFlags)
+        : m_storageFlags(other.m_storageFlags)
+        , m_size(other.m_size)
         , m_buffer(other.m_buffer)
 {
     other.m_buffer = 0;
@@ -155,12 +155,12 @@ void Buffer<T>::bind(GLenum target, std::variant<GLuint, BufferBinding> index, G
 }
 
 template <typename T>
-T* Buffer<T>::map(GLbitfield access)
+T* Buffer<T>::map(BufferAccessMask access)
 {
     return map(m_size, 0, access);
 }
 template <typename T>
-T* Buffer<T>::map(GLsizeiptr count, GLintptr offset, GLbitfield access)
+T* Buffer<T>::map(GLsizeiptr count, GLintptr offset, BufferAccessMask access)
 {
     return static_cast<T*>(
             glMapNamedBufferRange(m_buffer, offset, count * sizeof(T), access));

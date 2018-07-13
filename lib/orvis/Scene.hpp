@@ -41,6 +41,9 @@ public:
     /** @brief Fetches all bounding boxes from all meshes and uploads them to the GPU. */
     void updateBoundingBoxBuffer();
 
+    /** @brief Fetches all materials from all meshes and uploads them to the GPU. */
+    void updateMaterialBuffer();
+
     void addMesh(const std::shared_ptr<Mesh>& mesh);
 
     void setCamera(const std::shared_ptr<Camera>& camera);
@@ -52,6 +55,7 @@ private:
 
     Buffer<glm::mat4> m_modelMatBuffer;
     Buffer<Bounds> m_bBoxBuffer;
+    Buffer<Material> m_materialBuffer;
 
     Buffer<GLuint> m_multiDrawIndexBuffer;
     Buffer<glm::vec4> m_multiDrawVertexBuffer;

@@ -25,7 +25,7 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
         aiProcess_RemoveComponent | aiComponent_ANIMATIONS | aiComponent_BONEWEIGHTS |
         aiComponent_CAMERAS | aiComponent_LIGHTS | aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_COLORS |
         aiProcess_SplitLargeMeshes | aiProcess_ImproveCacheLocality | aiProcess_RemoveRedundantMaterials |
-        aiProcess_OptimizeMeshes);
+        aiProcess_OptimizeMeshes | aiProcess_FlipWindingOrder);
 
     if (!assimpScene || assimpScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
     {
@@ -84,26 +84,49 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
         calculateBoundingBox();
     });
 
-    updateMultiDrawBuffers();
+    { // running in parallel --> no model-matrices available in this scope!
+        updateMultiDrawBuffers();
+
+        m_multiDrawVao.format(VertexAttributeBinding::vertices, 4, GL_FLOAT, false, 0);
+        m_multiDrawVao.setVertexBuffer(m_multiDrawVertexBuffer, VertexAttributeBinding::vertices, 0, sizeof(glm::vec4));
+        m_multiDrawVao.binding(VertexAttributeBinding::vertices);
+
+        m_multiDrawVao.format(VertexAttributeBinding::normals, 4, GL_FLOAT, true, 0);
+        m_multiDrawVao.setVertexBuffer(m_multiDrawNormalBuffer, VertexAttributeBinding::normals, 0, sizeof(glm::vec4));
+        m_multiDrawVao.binding(VertexAttributeBinding::normals);
+
+        m_multiDrawVao.format(VertexAttributeBinding::texCoords, 2, GL_FLOAT, false, 0);
+        m_multiDrawVao.setVertexBuffer(m_multiDrawUVBuffer, VertexAttributeBinding::texCoords, 0, sizeof(glm::vec2));
+        m_multiDrawVao.binding(VertexAttributeBinding::texCoords);
+
+        m_multiDrawVao.setElementBuffer(m_multiDrawIndexBuffer);
+
+        updateMaterialBuffer();
+
+        m_cullingProgram.attachNew(GL_COMPUTE_SHADER, ShaderFile::load("compute/viewFrustumCulling.comp"));
+    }
 
     modelMatThread.join();
+
     updateModelMatrices();
     updateBoundingBoxBuffer();
 
     std::cout << "Loading complete: " << filename.string() << std::endl;
 
-    m_cullingProgram.attachNew(GL_COMPUTE_SHADER, ShaderFile::load("compute/viewFrustumCulling.comp"));
+    importer.FreeScene();
 }
 
 void Scene::render(const Program& program) const
 {
-    // CULLING
-    m_cullingProgram.use();
+    // BINDINGS
     m_indirectDrawBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::indirectDraw);
     m_bBoxBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::boundingBoxes);
     m_modelMatBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::modelMatrices);
+    m_materialBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::materials);
     m_camera->uploadToGpu();
-    
+
+    // CULLING
+    m_cullingProgram.use();    
     glDispatchCompute(static_cast<GLuint>(glm::ceil(m_indirectDrawBuffer.size() / 64.0f)), 1, 1);
     glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -166,6 +189,18 @@ void Scene::updateBoundingBoxBuffer()
     m_bBoxBuffer.assign(boundingBoxes);
 }
 
+void Scene::updateMaterialBuffer()
+{
+    std::vector<Material> materials(m_meshes.size());
+
+#pragma omp parallel for
+    for (int i = 0; i < static_cast<int>(materials.size()); ++i)
+        materials[i] = m_meshes[i]->material;
+
+    m_materialBuffer.resize(materials.size(), GL_DYNAMIC_STORAGE_BIT);
+    m_materialBuffer.assign(materials);
+}
+
 void Scene::addMesh(const std::shared_ptr<Mesh>& mesh)
 {
     m_meshes.push_back(mesh);
@@ -214,9 +249,4 @@ void Scene::updateMultiDrawBuffers()
     m_multiDrawUVBuffer.assign(allUVs);
     m_indirectDrawBuffer.resize(indirectDrawParams.size(), GL_DYNAMIC_STORAGE_BIT);
     m_indirectDrawBuffer.assign(indirectDrawParams);
-
-    m_multiDrawVao.setVertexBuffer(m_multiDrawVertexBuffer, VertexAttributeBinding::vertices);
-    m_multiDrawVao.setVertexBuffer(m_multiDrawNormalBuffer, VertexAttributeBinding::normals);
-    m_multiDrawVao.setVertexBuffer(m_multiDrawUVBuffer, VertexAttributeBinding::texCoords);
-    m_multiDrawVao.setElementBuffer(m_multiDrawIndexBuffer);
 }

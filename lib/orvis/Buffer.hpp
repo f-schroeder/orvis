@@ -184,7 +184,7 @@ public:
      * @param access Buffer mapping access flags for glMapNamedBufferRange.
      * @return The mapped data.
      */
-    T* map(GLbitfield access);
+    T* map(BufferAccessMask access);
 
     /**
      * @brief Maps a sub-range of the buffer to a CPU accessible data pointer.
@@ -193,7 +193,7 @@ public:
      * @param access Buffer mapping access flags for glMapNamedBufferRange.
      * @return The mapped data.
      */
-    T* map(GLsizeiptr count, GLintptr offset, GLbitfield access);
+    T* map(GLsizeiptr count, GLintptr offset, BufferAccessMask access);
 
     /**
      * @return The number of elements this buffer contains.

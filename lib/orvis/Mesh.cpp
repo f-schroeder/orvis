@@ -49,15 +49,13 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
         {
             const auto face = assimpMesh->mFaces[i];
 
-            indices[i + 0] = face.mIndices[0];
-            indices[i + 1] = face.mIndices[1];
-            indices[i + 2] = face.mIndices[2];
+            indices[i * 3 + 0] = face.mIndices[0];
+            indices[i * 3 + 1] = face.mIndices[1];
+            indices[i * 3 + 2] = face.mIndices[2];
         }
     });
 
     // - - - M A T E R I A L - - -
-
-
 
     aiString reltexPath;
     for (aiTextureType type : {aiTextureType_DIFFUSE, aiTextureType_OPACITY, aiTextureType_SPECULAR, aiTextureType_SHININESS, aiTextureType_NORMALS, aiTextureType_HEIGHT, aiTextureType_LIGHTMAP })
@@ -201,7 +199,7 @@ std::shared_ptr<Texture> Mesh::generateNormalFromHeight(const std::experimental:
             const float s12 = static_cast<float>(height[((y + 1) % imageHeight) * imageWidth + x]) / 255.0f;
             const glm::vec3 va = glm::normalize(glm::vec3(size, s21 - s01));
             const glm::vec3 vb = glm::normalize(glm::vec3(glm::vec2(size.y, size.x), s12 - s10));
-            const glm::vec3 tanSpaceNormal = cross(va, vb);
+            const glm::vec3 tanSpaceNormal = 0.5f * (cross(va, vb) + 1.0f);
             texData[y * imageWidth + x] = glm::vec4(tanSpaceNormal, static_cast<float>(height[y * imageWidth + x]) / 255.0f);
         }
 

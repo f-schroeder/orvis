@@ -17,7 +17,7 @@ int main()
 
     util::enableDebugCallback();
 
-    std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.01f, 1000.f));
+    std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.1f, 3000.f));
 
     Cubemap skybox;
     skybox.generateCubemap(util::resourcesPath / "textures" / "indoor");
@@ -32,6 +32,14 @@ int main()
     Timer timer;
 
     glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while(float deltatime = window.update() > 0.0f)
     {
