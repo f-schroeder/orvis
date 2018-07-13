@@ -21,22 +21,22 @@ namespace util
     /**
      * @brief Calls glm::unpackHalf2x16() on both components of v and renturns them as vec4
      */
-    inline glm::vec4 unpackHalf4x16(glm::uvec2 v);
+    glm::vec4 unpackHalf4x16(glm::uvec2 v);
 
     /**
     * @brief Calls glm::packHalf2x16() on both components of v and renturns them as uvec2
     */
-    inline glm::uvec2 packHalf4x16(glm::vec4 v);
+    glm::uvec2 packHalf4x16(glm::vec4 v);
 
     /**
     * @brief Splits a GLuint64 into a uvec2
     */
-    inline glm::uvec2 uint64ToUvec2(GLuint64 v);
+    glm::uvec2 uint64ToUvec2(GLuint64 v);
 
     /**
     * @brief Merges a uvec2 into a GLuint64
     */
-    inline GLuint64 uvec2ToUitn64(glm::uvec2 v);
+    GLuint64 uvec2ToUitn64(glm::uvec2 v);
 
     /**
      * @brief prints the OpenGL driver/vendor info to the console

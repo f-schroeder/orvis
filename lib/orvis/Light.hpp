@@ -6,6 +6,9 @@
 #include "Shader.hpp"
 #include "Scene.hpp"
 
+// forward declaration
+class Scene;
+
 enum class LightType : int
 {
     directional = 0,

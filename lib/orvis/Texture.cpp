@@ -1,6 +1,7 @@
 #include "Texture.hpp"
 
 #include "Util.hpp"
+#include "stb/stb_image.h"
 
 Sampler::Sampler()
 {
@@ -119,6 +120,73 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, int levels)
     util::getGlError(__LINE__, __FUNCTION__);
 
     generateHandle();
+}
+
+Texture::Texture(const std::experimental::filesystem::path& filename, unsigned int channels, int levels)
+    :Texture(GL_TEXTURE_2D)
+{
+    const bool isHdr = stbi_is_hdr(filename.string().c_str());
+
+    GLenum format, internalFormat;
+    switch(channels)
+    {
+    case 1:
+        format = GL_RED;
+        internalFormat = GL_R16F;// isHdr ? GL_R16F : GL_R8;
+        break;
+    case 2:
+        format = GL_RG;
+        internalFormat = GL_RG16F;// isHdr ? GL_RG16F : GL_RG8;
+        break;
+    case 3:
+        format = GL_RGB;
+        internalFormat = GL_RGB16F;// isHdr ? GL_RGB16F : GL_RGB8;
+        break;
+    case 4:
+        format = GL_RGBA;
+        internalFormat = GL_RGBA16F;// isHdr ? GL_RGBA16F : GL_RGBA8;
+        break;
+    default:
+        throw std::runtime_error("Tried to load texture with invalid number of channels (" + std::to_string(channels) + ")");
+    }
+
+    int imageWidth, imageHeight, numChannels;
+
+    stbi_set_flip_vertically_on_load(true);
+
+    stbi_info(filename.string().c_str(), &imageWidth, &imageHeight, &numChannels);
+
+    //m_size = { imageWidth, imageHeight, 1 };
+    //m_levels = levels == -1 ? static_cast<int>(glm::floor(std::log2(glm::max(imageWidth, imageHeight))) + 1)
+    //    : levels;
+
+    //glTextureStorage2D(m_textureId, m_levels, m_format, m_size.x, m_size.y);
+
+    resize(GL_TEXTURE_2D, internalFormat, { imageWidth, imageHeight });
+
+    util::getGlError(__LINE__, __FUNCTION__);
+
+    if (isHdr)
+    {
+        const auto img = stbi_loadf(filename.string().c_str(), &imageWidth, &imageHeight, &numChannels, channels);
+        //glTextureSubImage2D(m_textureId, 0, 0, 0, imageWidth, imageHeight, m_format, GL_FLOAT, img);
+        assign2D(format, GL_FLOAT, img);
+        stbi_image_free(img);
+    }
+    else
+    {
+        const auto img = stbi_load(filename.string().c_str(), &imageWidth, &imageHeight, &numChannels, channels);
+        //glTextureSubImage2D(m_textureId, 0, 0, 0, imageWidth, imageHeight, m_format, GL_UNSIGNED_BYTE, img);
+        assign2D(format, GL_UNSIGNED_BYTE, img);
+        stbi_image_free(img);
+    }
+
+    util::getGlError(__LINE__, __FUNCTION__);
+
+    generateMipmaps();
+    generateHandle();
+
+    util::getGlError(__LINE__, __FUNCTION__);
 }
 
 Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, int levels)

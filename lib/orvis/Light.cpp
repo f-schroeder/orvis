@@ -30,7 +30,7 @@ void Light::recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene)
         up = glm::vec3(1.0f, 0.0f, 0.0f);
     }
 
-    const Bounds& b = scene->getBoundingBox();
+    const Bounds& b = scene->bounds;
     const float bboxSize = glm::length(b[1] - b[0]);
 
     glm::mat4 view, projection;
@@ -94,7 +94,7 @@ void Light::ShadowMap::render(const std::shared_ptr<Scene>& scene) const
     // render SM
     shadowProgram.use();
     shadowFBO.bind();
-    scene->render();
+    //scene->render();
 
     // restore previous render settings
     FrameBuffer::unbind();

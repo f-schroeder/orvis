@@ -8,7 +8,8 @@ enum class BufferBinding : int
     cameraParameters = 51,
     lights = 52,
     materials = 53,
-    materialIndices = 54
+    boundingBoxes = 54,
+    indirectDraw = 55,
 };
 
 enum class TextureBinding : int
@@ -30,7 +31,8 @@ namespace binding
         glsp::definition("CAMERA_BINDING", static_cast<int>(BufferBinding::cameraParameters)),
         glsp::definition("LIGHTS_BINDING", static_cast<int>(BufferBinding::lights)),
         glsp::definition("MATERIALS_BINDING", static_cast<int>(BufferBinding::materials)),
-        glsp::definition("MATERIAL_INDICES_BINDING", static_cast<int>(BufferBinding::materialIndices)),
+        glsp::definition("BOUNDING_BOXES_BINDING", static_cast<int>(BufferBinding::boundingBoxes)),
+        glsp::definition("INDIRECT_DRAW_BINDING", static_cast<int>(BufferBinding::indirectDraw)),
 
         glsp::definition("SKYBOX_BINDING", static_cast<int>(TextureBinding::skybox)),
 

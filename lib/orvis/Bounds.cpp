@@ -68,3 +68,13 @@ glm::vec3& Bounds::operator[](int index)
 bool Bounds::operator==(const Bounds& other) const { return min == other.min && max == other.max; }
 
 bool Bounds::operator!=(const Bounds& other) const { return !operator==(other); }
+
+const Bounds& Bounds::operator+(const Bounds& other)
+{
+    return unite(other);
+}
+
+const Bounds& Bounds::operator+(const glm::vec3& point)
+{
+    return unite(point);
+}

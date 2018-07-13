@@ -80,6 +80,10 @@ struct Bounds : Createable<Bounds>
     /** @returns false if min and max match, true otherwise. */
     bool operator!=(const Bounds& other) const;
 
+    /** @brief Operator overloadings for Bounds::unite(). */
+    const Bounds& operator+(const Bounds& other);
+    const Bounds& operator+(const glm::vec3& point);
+
     alignas(16) glm::vec3 min; //!< The bounds extent's minimum.
     alignas(16) glm::vec3 max; //!< The bounds extent's maximum.
 };

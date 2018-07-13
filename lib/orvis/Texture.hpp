@@ -60,6 +60,7 @@ private:
 class Texture : Createable<Texture>
 {
 public:
+
     /**
      * @brief Textures are default constructible but invalid until reassignment or a call to
      * Texture::resize.
@@ -85,6 +86,15 @@ public:
      * the maximum amount for the given size.
      */
     Texture(GLenum target, GLenum format, glm::ivec2 size, int levels = -1);
+
+    /**
+    * @brief Creates a 2D texture and fills it with data from an image file.
+    * @param filename The path to the image file that is loaded.
+    * @param channels The number of channels that should be loaded
+    * @param levels The number of mipmap levels for this texture. If set to -1, it will be set to
+    * the maximum amount for the given size.
+    */
+    Texture(const std::experimental::filesystem::path& filename, unsigned int channels, int levels = -1);
 
     /**
      * @brief Creates a 3D texture.
