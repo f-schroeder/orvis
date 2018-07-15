@@ -20,7 +20,7 @@ int main()
     std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.1f, 3000.f));
 
     Cubemap skybox;
-    skybox.generateCubemap(util::resourcesPath / "textures" / "indoor");
+    skybox.generateCubemap(util::resourcesPath / "textures/skybox", ".jpg");
 
     Program shaderProg;
     shaderProg.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/multiDraw.vert"));
@@ -49,9 +49,9 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cam->update(window);
 
-        scene.render(shaderProg);
+        skybox.renderAsSkybox(cam);
 
-        //skybox.renderAsSkybox(cam);
+        scene.render(shaderProg);        
     
         timer.stop();
         timer.drawGuiWindow(window);

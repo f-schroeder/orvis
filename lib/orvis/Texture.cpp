@@ -128,7 +128,7 @@ Texture::Texture(const std::experimental::filesystem::path& filename, unsigned i
     const bool isHdr = stbi_is_hdr(filename.string().c_str());
 
     GLenum format, internalFormat;
-    switch(channels)
+    switch (channels)
     {
     case 1:
         format = GL_RED;
@@ -156,12 +156,6 @@ Texture::Texture(const std::experimental::filesystem::path& filename, unsigned i
 
     stbi_info(filename.string().c_str(), &imageWidth, &imageHeight, &numChannels);
 
-    //m_size = { imageWidth, imageHeight, 1 };
-    //m_levels = levels == -1 ? static_cast<int>(glm::floor(std::log2(glm::max(imageWidth, imageHeight))) + 1)
-    //    : levels;
-
-    //glTextureStorage2D(m_textureId, m_levels, m_format, m_size.x, m_size.y);
-
     resize(GL_TEXTURE_2D, internalFormat, { imageWidth, imageHeight });
 
     util::getGlError(__LINE__, __FUNCTION__);
@@ -169,14 +163,12 @@ Texture::Texture(const std::experimental::filesystem::path& filename, unsigned i
     if (isHdr)
     {
         const auto img = stbi_loadf(filename.string().c_str(), &imageWidth, &imageHeight, &numChannels, channels);
-        //glTextureSubImage2D(m_textureId, 0, 0, 0, imageWidth, imageHeight, m_format, GL_FLOAT, img);
         assign2D(format, GL_FLOAT, img);
         stbi_image_free(img);
     }
     else
     {
         const auto img = stbi_load(filename.string().c_str(), &imageWidth, &imageHeight, &numChannels, channels);
-        //glTextureSubImage2D(m_textureId, 0, 0, 0, imageWidth, imageHeight, m_format, GL_UNSIGNED_BYTE, img);
         assign2D(format, GL_UNSIGNED_BYTE, img);
         stbi_image_free(img);
     }
@@ -200,7 +192,7 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, int levels)
         : levels;
     glTextureStorage3D(
         m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
-    
+
     util::getGlError(__LINE__, __FUNCTION__);
 
     generateHandle();

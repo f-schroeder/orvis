@@ -26,46 +26,93 @@ void Cubemap::generateCubemap(const std::experimental::filesystem::path& cubeMap
     struct deleter
     {
         void operator()(float* f) const { stbi_image_free(f); }
-    };
-    using Data = std::unique_ptr<float, deleter>;
-
-    std::array<Data, 6> data{
-            Data(stbi_loadf((cubeMapSourcePath / (posX + extension)).string().c_str(),
-                            &width,
-                            &height,
-                            nullptr,
-                            STBI_rgb)),
-            Data(stbi_loadf((cubeMapSourcePath / (negX + extension)).string().c_str(),
-                            &width,
-                            &height,
-                            nullptr,
-                            STBI_rgb)),
-            Data(stbi_loadf((cubeMapSourcePath / (posY + extension)).string().c_str(),
-                            &width,
-                            &height,
-                            nullptr,
-                            STBI_rgb)),
-            Data(stbi_loadf((cubeMapSourcePath / (negY + extension)).string().c_str(),
-                            &width,
-                            &height,
-                            nullptr,
-                            STBI_rgb)),
-            Data(stbi_loadf((cubeMapSourcePath / (posZ + extension)).string().c_str(),
-                            &width,
-                            &height,
-                            nullptr,
-                            STBI_rgb)),
-            Data(stbi_loadf((cubeMapSourcePath / (negZ + extension)).string().c_str(),
-                            &width,
-                            &height,
-                            nullptr,
-                            STBI_rgb)),
+        void operator()(unsigned char* f) const { stbi_image_free(f); }
     };
 
-    m_texture.resize(GL_TEXTURE_CUBE_MAP, GL_R11F_G11F_B10F, glm::ivec2(width, height));
+    if (stbi_is_hdr((cubeMapSourcePath / (posX + extension)).string().c_str()))
+    {
+        using Data = std::unique_ptr<float, deleter>;
 
-    for (int i = 0; i < 6; ++i)
-        m_texture.assign3D(0, { 0, 0, i }, { width, height, 1 }, GL_RGB, GL_FLOAT, data[i].get());
+        std::array<Data, 6> data{
+                Data(stbi_loadf((cubeMapSourcePath / (posX + extension)).string().c_str(),
+                                &width,
+                                &height,
+                                nullptr,
+                                STBI_rgb)),
+                Data(stbi_loadf((cubeMapSourcePath / (negX + extension)).string().c_str(),
+                                &width,
+                                &height,
+                                nullptr,
+                                STBI_rgb)),
+                Data(stbi_loadf((cubeMapSourcePath / (posY + extension)).string().c_str(),
+                                &width,
+                                &height,
+                                nullptr,
+                                STBI_rgb)),
+                Data(stbi_loadf((cubeMapSourcePath / (negY + extension)).string().c_str(),
+                                &width,
+                                &height,
+                                nullptr,
+                                STBI_rgb)),
+                Data(stbi_loadf((cubeMapSourcePath / (posZ + extension)).string().c_str(),
+                                &width,
+                                &height,
+                                nullptr,
+                                STBI_rgb)),
+                Data(stbi_loadf((cubeMapSourcePath / (negZ + extension)).string().c_str(),
+                                &width,
+                                &height,
+                                nullptr,
+                                STBI_rgb)),
+        };
+
+        m_texture.resize(GL_TEXTURE_CUBE_MAP, GL_R11F_G11F_B10F, glm::ivec2(width, height));
+
+        for (int i = 0; i < 6; ++i)
+            m_texture.assign3D(0, { 0, 0, i }, { width, height, 1 }, GL_RGB, GL_FLOAT, data[i].get());
+    }
+    else
+    {
+        using Data = std::unique_ptr<unsigned char, deleter>;
+
+        std::array<Data, 6> data{
+            Data(stbi_load((cubeMapSourcePath / (posX + extension)).string().c_str(),
+            &width,
+            &height,
+            nullptr,
+            STBI_rgb)),
+            Data(stbi_load((cubeMapSourcePath / (negX + extension)).string().c_str(),
+            &width,
+            &height,
+            nullptr,
+            STBI_rgb)),
+            Data(stbi_load((cubeMapSourcePath / (posY + extension)).string().c_str(),
+            &width,
+            &height,
+            nullptr,
+            STBI_rgb)),
+            Data(stbi_load((cubeMapSourcePath / (negY + extension)).string().c_str(),
+            &width,
+            &height,
+            nullptr,
+            STBI_rgb)),
+            Data(stbi_load((cubeMapSourcePath / (posZ + extension)).string().c_str(),
+            &width,
+            &height,
+            nullptr,
+            STBI_rgb)),
+            Data(stbi_load((cubeMapSourcePath / (negZ + extension)).string().c_str(),
+            &width,
+            &height,
+            nullptr,
+            STBI_rgb)),
+        };
+
+        m_texture.resize(GL_TEXTURE_CUBE_MAP, GL_R11F_G11F_B10F, glm::ivec2(width, height));
+
+        for (int i = 0; i < 6; ++i)
+            m_texture.assign3D(0, { 0, 0, i }, { width, height, 1 }, GL_RGB, GL_UNSIGNED_BYTE, data[i].get());
+    }
 
     m_texture.generateMipmaps();
 }
