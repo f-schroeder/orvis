@@ -16,6 +16,13 @@ enum class Direction
     DOWN
 };
 
+enum class SpeedModifier
+{
+    NORMAL,
+    SLOW,
+    FAST
+};
+
 // default camera values
 constexpr float SPEED      = 10.0f;
 constexpr float SENSITIVTY = 0.05f;
@@ -105,10 +112,12 @@ public:
     /** @return The view matrix. */
     glm::mat4 projection() const;
 
+    /** @brief Sets the movement speed of the camera. */
+    void setSpeed(float speed);
+
 private:
-    void processKeyboard(Direction direction, double deltaTime, bool speedModifier);
+    void processKeyboard(Direction direction, double deltaTime, SpeedModifier speedModifier);
     void processMouseMovement(double xoffset, double yoffset);
-    void updateSpeed(float speed);
 
     // starting paramters for reset
     glm::vec3 m_startPosition;

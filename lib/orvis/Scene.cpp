@@ -126,7 +126,7 @@ void Scene::render(const Program& program) const
     m_camera->uploadToGpu();
 
     // CULLING
-    m_cullingProgram.use();    
+    m_cullingProgram.use();
     glDispatchCompute(static_cast<GLuint>(glm::ceil(m_indirectDrawBuffer.size() / 64.0f)), 1, 1);
     glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -162,6 +162,8 @@ const Bounds& Scene::calculateBoundingBox()
     };
 
     bounds = std::reduce(std::execution::par_unseq, m_meshes.begin(), m_meshes.end(), Bounds(), Reduction());
+    if (m_camera)
+        m_camera->setSpeed(0.1f * glm::length(bounds[1] - bounds[0]));
     return bounds;
 }
 
@@ -173,7 +175,9 @@ void Scene::updateModelMatrices()
     for (int i = 0; i < static_cast<int>(modelMatrices.size()); ++i)
         modelMatrices[i] = m_meshes[i]->modelMatrix;
 
-    m_modelMatBuffer.resize(modelMatrices.size(), GL_DYNAMIC_STORAGE_BIT);
+    if (modelMatrices.size() != static_cast<size_t>(m_modelMatBuffer.size()))
+        m_modelMatBuffer.resize(modelMatrices.size(), GL_DYNAMIC_STORAGE_BIT);
+
     m_modelMatBuffer.assign(modelMatrices);
 }
 
@@ -185,7 +189,9 @@ void Scene::updateBoundingBoxBuffer()
     for (int i = 0; i < static_cast<int>(boundingBoxes.size()); ++i)
         boundingBoxes[i] = m_meshes[i]->bounds;
 
-    m_bBoxBuffer.resize(boundingBoxes.size(), GL_DYNAMIC_STORAGE_BIT);
+    if (boundingBoxes.size() != static_cast<size_t>(m_bBoxBuffer.size()))
+        m_bBoxBuffer.resize(boundingBoxes.size(), GL_DYNAMIC_STORAGE_BIT);
+
     m_bBoxBuffer.assign(boundingBoxes);
 }
 
@@ -197,20 +203,49 @@ void Scene::updateMaterialBuffer()
     for (int i = 0; i < static_cast<int>(materials.size()); ++i)
         materials[i] = m_meshes[i]->material;
 
-    m_materialBuffer.resize(materials.size(), GL_DYNAMIC_STORAGE_BIT);
+    if (materials.size() != static_cast<size_t>(m_materialBuffer.size()))
+        m_materialBuffer.resize(materials.size(), GL_DYNAMIC_STORAGE_BIT);
+
     m_materialBuffer.assign(materials);
+}
+
+void Scene::updateLightBuffer()
+{
+    std::vector<Light> lights(m_meshes.size());
+
+#pragma omp parallel for
+    for (int i = 0; i < static_cast<int>(lights.size()); ++i)
+    {
+        lights[i] = *m_lights[i];
+    }
+
+    if (lights.size() != static_cast<size_t>(m_lightBuffer.size()))
+        m_lightBuffer.resize(lights.size(), GL_DYNAMIC_STORAGE_BIT);
+
+    m_lightBuffer.assign(lights);
 }
 
 void Scene::addMesh(const std::shared_ptr<Mesh>& mesh)
 {
     m_meshes.push_back(mesh);
+    std::thread bBoxThread([&]() { calculateBoundingBox(); });
     updateModelMatrices();
     updateMultiDrawBuffers();
+    updateBoundingBoxBuffer();
+    updateMaterialBuffer();
+    bBoxThread.join();
+}
+
+void Scene::addLight(const std::shared_ptr<Light>& light)
+{
+    m_lights.push_back(light);
+    updateLightBuffer();
 }
 
 void Scene::setCamera(const std::shared_ptr<Camera>& camera)
 {
     m_camera = camera;
+    m_camera->setSpeed(0.1f * glm::length(bounds[1] - bounds[0]));
 }
 
 void Scene::updateMultiDrawBuffers()

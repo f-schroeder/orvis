@@ -14,7 +14,7 @@ out vec4 fragColor;
 
 void main()
 {
-//	Material mat = getMaterial(drawID, texCoord);
-//	fragColor = mat.albedo;
-	fragColor = vec4(0.5f * (normal + 1.0f), 1.0f);
+	Material mat = getMaterial(drawID, texCoord);
+	fragColor = vec4(mat.albedo.xyz, 1.0f);
+//	fragColor = vec4(0.5f * (normal + 1.0f), 1.0f);
 }

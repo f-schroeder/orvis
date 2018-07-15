@@ -69,30 +69,54 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
             switch (type)
             {
             case aiTextureType_DIFFUSE: //albedo
+            {
                 m_textures[aiTextureType_DIFFUSE] = std::make_shared<Texture>(absTexPath, 4);
+                material.setColor(m_textures[aiTextureType_DIFFUSE]);
                 break;
+            }
             case aiTextureType_OPACITY: //albedo alpha
+            {
                 if (assimpMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+                {
                     copyToAlpha(absTexPath, m_textures[aiTextureType_DIFFUSE]);
+                    material.setColor(m_textures[aiTextureType_DIFFUSE]);
+                }
                 break;
+            }
             case aiTextureType_SPECULAR: //roughness
+            {
                 m_textures[aiTextureType_SPECULAR] = std::make_shared<Texture>(absTexPath, 1);
+                material.setRoughness(m_textures[aiTextureType_SPECULAR]);
                 break;
+            }
             case aiTextureType_SHININESS: //metallic
+            {
                 m_textures[aiTextureType_SHININESS] = std::make_shared<Texture>(absTexPath, 1);
+                material.setMetallic(m_textures[aiTextureType_SHININESS]);
                 break;
+            }
             case aiTextureType_NORMALS: //normal
+            {
                 m_textures[aiTextureType_NORMALS] = std::make_shared<Texture>(absTexPath, 4);
+                material.setNormalMap(m_textures[aiTextureType_NORMALS]);
                 break;
+            }
             case aiTextureType_HEIGHT: //height-to-normal or normal alpha
+            {
                 if (assimpMat->GetTextureCount(aiTextureType_NORMALS) > 0)
                     copyToAlpha(absTexPath, m_textures[aiTextureType_NORMALS]);
                 else
                     m_textures[aiTextureType_NORMALS] = generateNormalFromHeight(absTexPath);
+
+                material.setNormalMap(m_textures[aiTextureType_NORMALS]);
                 break;
+            }
             case aiTextureType_LIGHTMAP: //ambient occlusion
+            {
                 m_textures[aiTextureType_LIGHTMAP] = std::make_shared<Texture>(absTexPath, 1);
+                material.setAoMap(m_textures[aiTextureType_LIGHTMAP]);
                 break;
+            }
             default:
                 break;
             }
@@ -110,9 +134,13 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
             }
             case aiTextureType_OPACITY: //albedo alpha
             {
-                float op;
-                assimpMat->Get(AI_MATKEY_OPACITY, op);
-                material.setColor(glm::vec4(glm::vec3(material.getColor()), op));
+                if (assimpMat->GetTextureCount(aiTextureType_DIFFUSE) == 0)
+                {
+                    float op;
+                    assimpMat->Get(AI_MATKEY_OPACITY, op);
+                    material.setColor(glm::vec4(glm::vec3(material.getColor()), op));
+
+                }
                 break;
             }
             case aiTextureType_SPECULAR: //roughness

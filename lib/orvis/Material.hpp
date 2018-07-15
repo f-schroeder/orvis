@@ -3,11 +3,10 @@
 #include "Createable.hpp"
 #include <glbinding/gl/gl.h>
 #include "Texture.hpp"
-#include <bitset>
 
 using namespace gl;
 
-enum MaterialTextureBitsetIndex
+enum MaterialTextureBitsetIndex : unsigned int
 {
     MAT_COLOR_BIT,
     MAT_ROUGHNESS_BIT,
@@ -23,13 +22,18 @@ class Material : Createable<Material>
 {
 public:
     /**
+    * @brief Initializes the material struct with all values set to 0
+    */
+    Material() = default;
+
+    /**
      * @brief Initializes the material struct
      * @param color The color of the material (clamped to positive values)
      * @param roughness The roughness of the material (clamped to [0,1])
      * @param metallic The metalness of the material (clamped to [0,1])
      * @param ior Index of Refraction (clamped to positive values)
      */
-    Material(glm::vec4 color = glm::vec4(1.0f), float roughness = 0.5f, float metallic = 0.0f,
+    Material(glm::vec4 color, float roughness, float metallic,
         float ior = 1.5f);
 
     /**
@@ -73,8 +77,7 @@ private:
     glm::uvec2 m_metallic{ 0, 0 };
 
     float m_ior = 1.0f;
-    std::bitset<32> m_isTextureBitset;
-    //GLuint m_isTextureBitset = 0u; // texture if bit=1, color otherwise
+    GLuint m_isTextureBitset = 0u; // texture if bit=1, color otherwise
 
     GLuint64 m_normal = 0;
     GLuint64 m_ao = 0;

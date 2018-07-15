@@ -1,6 +1,31 @@
 #include "Light.hpp"
 #include "Bounds.hpp"
 
+Light::Light(const Light& other)
+{
+    color = other.color;
+    cutOff = other.cutOff;
+    position = other.position;
+    pcfKernelSize = other.pcfKernelSize;
+    direction = other.direction;
+    m_type = other.m_type;
+    m_lightSpaceMatrix = other.m_lightSpaceMatrix;
+    m_shadowMapHandle = other.m_shadowMapHandle;
+}
+
+Light& Light::operator=(const Light& other)
+{
+    color = other.color;
+    cutOff = other.cutOff;
+    position = other.position;
+    pcfKernelSize = other.pcfKernelSize;
+    direction = other.direction;
+    m_type = other.m_type;
+    m_lightSpaceMatrix = other.m_lightSpaceMatrix;
+    m_shadowMapHandle = other.m_shadowMapHandle;
+    return *this;
+}
+
 std::shared_ptr<Light> Light::makePointLight(glm::vec3 position, glm::vec3 color)
 {
     return std::shared_ptr<Light>(new Light(position, glm::vec3(0.0f), color, 0.0f, LightType::point));

@@ -17,12 +17,28 @@ enum class LightType : int
 };
 
 /**
- * @brief Struct containing lighting information passed to the shader
+ * @brief Struct containing lighting information passed to the shader.
  * Currently only point lights!
  */
 class Light
 {
 public:
+
+    /** @brief Standard constructor. Only for deafult-constructability. Use factory functions (make...()) to create a light. */
+    Light() = default;
+
+    /** 
+     * @brief Copy constructor. Copies all values to the new light object. 
+     * Caution: Shadow map texture object is not copied (only its GPU-handle)!
+     */
+    Light(const Light& other);
+
+    /** 
+     * @brief Copy assignment operator. Copies all values to the new light object. 
+     * Caution: Shadow map texture object is not copied (only its GPU-handle)!
+     */
+    Light& operator=(const Light& other);
+
     /**
      * @brief Initializes a point light
      * @param position The position of the light source
@@ -52,11 +68,11 @@ public:
      */
     void update(const std::shared_ptr<Scene>& scene);
 
-    glm::vec3 color;            // all
-    float cutOff;               // spot
-    glm::vec3 position;         // spot, point    
-    int pcfKernelSize = 1;      // all (used for SM filtering)
-    glm::vec3 direction;        // dir, spot  
+    glm::vec3 color = glm::vec3(1.0f);                                      // all
+    float cutOff = glm::radians(25.0f);                                     // spot
+    glm::vec3 position = glm::vec3(0.0f, 1.0f, 0.0f);                       // spot, point    
+    int pcfKernelSize = 1;                                                  // all (used for SM filtering)
+    glm::vec3 direction = glm::normalize(glm::vec3(0.5f, -1.0f, -0.5f));    // dir, spot  
 
 private:
     struct ShadowMap
@@ -74,7 +90,7 @@ private:
 
     void recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene);
 
-    LightType m_type; // 0 directional, 1 point light, 2 spot light
+    LightType m_type = LightType::point; // 0 directional, 1 point light, 2 spot light
 
     //shadow mapping stuff
     glm::mat4 m_lightSpaceMatrix = glm::mat4(1.0f);

@@ -3,9 +3,7 @@
 #include <vector>
 #include <thread>
 #include <experimental/filesystem>
-
 #include <glbinding/gl/gl.h>
-#include <glm/detail/type_vec4.hpp>
 using namespace gl;
 #include <GLFW/glfw3.h>
 
@@ -18,25 +16,11 @@ namespace util
      */
     std::string convertGLubyteToString(const GLubyte* content);
 
-    /**
-     * @brief Calls glm::unpackHalf2x16() on both components of v and renturns them as vec4
-     */
-    glm::vec4 unpackHalf4x16(glm::uvec2 v);
+    /** @brief Sets the bit of _bitset_ at position _index_ to _value_ */
+    void setBit(GLuint& bitset, unsigned int index, bool value);
 
-    /**
-    * @brief Calls glm::packHalf2x16() on both components of v and renturns them as uvec2
-    */
-    glm::uvec2 packHalf4x16(glm::vec4 v);
-
-    /**
-    * @brief Splits a GLuint64 into a uvec2
-    */
-    glm::uvec2 uint64ToUvec2(GLuint64 v);
-
-    /**
-    * @brief Merges a uvec2 into a GLuint64
-    */
-    GLuint64 uvec2ToUitn64(glm::uvec2 v);
+    /** @brief Gets the bit of _bitset_ at position _index_ */
+    bool getBit(GLuint bitset, unsigned int index);
 
     /**
      * @brief prints the OpenGL driver/vendor info to the console

@@ -24,7 +24,7 @@ void Camera::update(GLFWwindow* window)
         m_lastTime = currentFrameTime;
 
         // check keyboard input
-        const bool speedMod = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
+        const SpeedModifier speedMod = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? SpeedModifier::FAST : glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ? SpeedModifier::SLOW : SpeedModifier::NORMAL;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             processKeyboard(Direction::FORWARD, deltaTime, speedMod);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -38,9 +38,9 @@ void Camera::update(GLFWwindow* window)
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
             processKeyboard(Direction::UP, deltaTime, speedMod);
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-            updateSpeed(m_speed + 0.01f);
+            setSpeed(m_speed + 0.01f);
         if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-            updateSpeed(m_speed - 0.01f);
+            setSpeed(m_speed - 0.01f);
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
             reset();
         if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && !m_cPressed)
@@ -93,7 +93,7 @@ void Camera::uploadToGpu()
 void Camera::uploadToGpu(const glm::mat4& view, const glm::mat4& proj)
 {
     const glm::mat4 invVP = glm::inverse(proj * glm::mat4(glm::mat3(view)));
-    m_cameraBuffer.assign({view[3], glm::inverse(view)[2], view, proj, invVP });
+    m_cameraBuffer.assign({ view[3], glm::inverse(view)[2], view, proj, invVP });
     m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
 }
 
@@ -105,11 +105,14 @@ void Camera::reset()
 
 glm::mat4 Camera::view() const { return glm::lookAt(position, position + forward(), up()); }
 
-void Camera::processKeyboard(Direction direction, double deltaTime, bool speedModifier)
+void Camera::processKeyboard(Direction direction, double deltaTime, SpeedModifier speedModifier)
 {
     float velocity = m_speed * static_cast<float>(deltaTime);
-    if (speedModifier)
-        velocity *= m_speed;
+    if (speedModifier == SpeedModifier::FAST)
+        velocity *= 10.0f;
+    else if (speedModifier == SpeedModifier::SLOW)
+        velocity /= 10.0f;
+
     switch (direction)
     {
     case Direction::FORWARD:
@@ -146,7 +149,7 @@ void Camera::processMouseMovement(double xoffset, double yoffset)
         glm::angleAxis(glm::radians(static_cast<float>(yoffset)), glm::vec3(1, 0, 0));
 }
 
-inline void Camera::updateSpeed(float speed)
+inline void Camera::setSpeed(float speed)
 {
     if (speed > 0)
         this->m_speed = speed;

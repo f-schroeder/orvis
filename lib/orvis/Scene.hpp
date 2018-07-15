@@ -28,10 +28,12 @@ public:
     /** @brief The bounding box around all _transformed_ meshes. */
     Bounds bounds;
 
+    /** @brief Performs GPU view frustum culling and afterwards draws the scene indirectly */
     void render(const Program& program) const;
 
     /** @brief Calculates the bounding box around all transformed meshes.
     * Only has to be called if the bounds or the model-matrix of any mesh is changed.
+    * If a camera is set, also updates the camera speed accordingly.
     */
     const Bounds& calculateBoundingBox();
 
@@ -44,8 +46,16 @@ public:
     /** @brief Fetches all materials from all meshes and uploads them to the GPU. */
     void updateMaterialBuffer();
 
+    /** @brief Uploads all lights to the GPU. */
+    void updateLightBuffer();
+
+    /** @brief Adds a mesh to the scene and updates all mesh related buffers */
     void addMesh(const std::shared_ptr<Mesh>& mesh);
 
+    /** @brief Adds a light to the scene and updates the light buffer */
+    void addLight(const std::shared_ptr<Light>& light);
+
+    /** @brief Sets the camera and adjusts its speed to match the scene dimansions. */
     void setCamera(const std::shared_ptr<Camera>& camera);
 
 private:
@@ -64,6 +74,8 @@ private:
     VertexArray m_multiDrawVao;
 
     Buffer<IndirectDrawCommand> m_indirectDrawBuffer;
+
+    Buffer<Light> m_lightBuffer;
 
     Program m_cullingProgram;
 
