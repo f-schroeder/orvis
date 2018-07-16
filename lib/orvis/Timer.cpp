@@ -47,6 +47,7 @@ void Timer::drawGuiWindow(GLFWwindow* window)
 
 void Timer::drawGuiContent(GLFWwindow* window, bool compact)
 {
+    ImGui::PushID(this);
 	auto flaccTime = 0.0f;
 	if (m_ftimes.size() > 21)
 	{
@@ -93,4 +94,5 @@ void Timer::drawGuiContent(GLFWwindow* window, bool compact)
 		ImGui::SameLine();
 		ImGui::Value("Frametime (ms)", flaccTime);
 	}
+    ImGui::PopID();
 }

@@ -123,6 +123,7 @@ void Scene::render(const Program& program) const
     m_bBoxBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::boundingBoxes);
     m_modelMatBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::modelMatrices);
     m_materialBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::materials);
+    m_lightBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::lights);
     m_camera->uploadToGpu();
 
     // CULLING
@@ -211,7 +212,7 @@ void Scene::updateMaterialBuffer()
 
 void Scene::updateLightBuffer()
 {
-    std::vector<Light> lights(m_meshes.size());
+    std::vector<Light> lights(m_lights.size());
 
 #pragma omp parallel for
     for (int i = 0; i < static_cast<int>(lights.size()); ++i)

@@ -17,7 +17,7 @@ int main()
 
     util::enableDebugCallback();
 
-    std::shared_ptr<Camera> cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.1f, 3000.f));
+    auto cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.1f, 3000.f));
 
     Cubemap skybox;
     skybox.generateCubemap(util::resourcesPath / "textures/skybox", ".jpg");
@@ -28,6 +28,13 @@ int main()
 
     Scene scene("sponza/sponza.obj");
     scene.setCamera(cam);
+
+    auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, {100.0f, 100.0f, 100.0f});
+    auto l2 = Light::makeDirectionalLight();
+    auto l3 = Light::makeSpotLight({ 0.0f, 100.0f, 0.0f }, {-1,-1,-1}, { 100.0f, 100.0f, 100.0f });
+    scene.addLight(l1);
+    scene.addLight(l2);
+    scene.addLight(l3);
 
     Timer timer;
 
@@ -52,7 +59,10 @@ int main()
         skybox.renderAsSkybox(cam);
 
         scene.render(shaderProg);        
-    
+
+        if (l1->drawGuiWindow() || l2->drawGuiWindow() || l3->drawGuiWindow())
+            scene.updateLightBuffer();
+
         timer.stop();
         timer.drawGuiWindow(window);
     }

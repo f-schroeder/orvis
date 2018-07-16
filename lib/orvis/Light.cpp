@@ -1,5 +1,7 @@
 #include "Light.hpp"
 #include "Bounds.hpp"
+#include <imgui.h>
+#include <functional>
 
 Light::Light(const Light& other)
 {
@@ -44,7 +46,7 @@ std::shared_ptr<Light> Light::makeSpotLight(glm::vec3 position, glm::vec3 direct
 void Light::update(const std::shared_ptr<Scene>& scene)
 {
     recalculateLightSpaceMatrix(scene);
-    m_shadowMap->render(scene);
+    //m_shadowMap->render(scene);
 }
 
 void Light::recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene)
@@ -60,17 +62,17 @@ void Light::recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene)
 
     glm::mat4 view, projection;
     if (m_type == LightType::directional)
-    {            
-            const glm::vec3 bboxCenter = 0.5f * (b[1] + b[0]);
-            // position needed for shadow map
-            position = bboxCenter + 0.5f * bboxSize * glm::normalize(-direction);
+    {
+        const glm::vec3 bboxCenter = 0.5f * (b[1] + b[0]);
+        // position needed for shadow map
+        position = bboxCenter + 0.5f * bboxSize * glm::normalize(-direction);
 
-            const glm::vec2 bb = glm::vec2(glm::compMin(b[0]), glm::compMax(b[1]));
-            const float min = bb.x - 0.244f * abs(bb.x); //0.244 = (sqrt(3)-1)/3
-            const float max = bb.y + 0.244f * abs(bb.y);
+        const glm::vec2 bb = glm::vec2(glm::compMin(b[0]), glm::compMax(b[1]));
+        const float min = bb.x - 0.244f * abs(bb.x); //0.244 = (sqrt(3)-1)/3
+        const float max = bb.y + 0.244f * abs(bb.y);
 
-            projection = glm::ortho(min, max, min, max, 0.1f, bboxSize);
-            view = glm::lookAt(position, position + direction, up);
+        projection = glm::ortho(min, max, min, max, 0.1f, bboxSize);
+        view = glm::lookAt(position, position + direction, up);
     }
     else if (m_type == LightType::spot)
     {
@@ -101,8 +103,8 @@ Light::Light(glm::vec3 position, glm::vec3 direction, glm::vec3 color, float cut
 
 Light::ShadowMap::ShadowMap()
 {
-    shadowProgram.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/shadowMap.vert"));
-    shadowProgram.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/shadowMap.frag"));
+    //shadowProgram.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/shadowMap.vert"));
+    //shadowProgram.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/shadowMap.frag"));
 }
 
 void Light::ShadowMap::render(const std::shared_ptr<Scene>& scene) const
@@ -117,7 +119,7 @@ void Light::ShadowMap::render(const std::shared_ptr<Scene>& scene) const
     glCullFace(GL_FRONT);
 
     // render SM
-    shadowProgram.use();
+    //shadowProgram.use();
     shadowFBO.bind();
     //scene->render();
 
@@ -125,4 +127,63 @@ void Light::ShadowMap::render(const std::shared_ptr<Scene>& scene) const
     FrameBuffer::unbind();
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
     glCullFace(GL_BACK);
+}
+
+bool Light::drawGuiWindow()
+{
+    ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiSetCond_FirstUseEver);
+    ImGui::Begin("Light");
+    const bool changed = drawGuiContent();
+    ImGui::End();
+    return changed;
+}
+
+bool Light::drawGuiContent()
+{
+    ImGui::PushID(this);
+
+    bool changed = false;
+
+    std::string typeString;
+    switch (m_type)
+    {
+    case LightType::directional:
+        typeString = "Directional ";
+        break;
+    case LightType::point:
+        typeString = "Point ";
+        break;
+    case LightType::spot:
+        typeString = "Spot ";
+        break;
+    }
+
+    ImGui::Text((typeString + std::string("Light")).c_str());
+
+    float intensity = glm::max(glm::compMax(color), 1.0f);
+    if (ImGui::ColorEdit3("Color", glm::value_ptr(color), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_PickerHueWheel) ||
+        ImGui::DragFloat("Intensity", &intensity))
+    {
+        color = color / glm::max(glm::compMax(color), 1.0f) * intensity;
+        changed = true;
+    }
+
+    if(m_type == LightType::point || m_type == LightType::spot)
+        if (ImGui::DragFloat3("Position", glm::value_ptr(position)))
+            changed = true;
+
+    if (m_type == LightType::directional || m_type == LightType::spot)
+        if (ImGui::SliderFloat3("Direction", glm::value_ptr(direction), -1.0f, 1.0f))
+            changed = true;
+
+    if (m_type == LightType::spot)
+        if (ImGui::SliderFloat("Cutoff", &cutOff, 0.0f, glm::pi<float>()))
+            changed = true;
+
+    if (ImGui::SliderInt("PCF size", &pcfKernelSize, 0, 10))
+        changed = true;
+
+    ImGui::PopID();
+
+    return changed;
 }

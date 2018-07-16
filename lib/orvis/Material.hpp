@@ -22,18 +22,13 @@ class Material : Createable<Material>
 {
 public:
     /**
-    * @brief Initializes the material struct with all values set to 0
-    */
-    Material() = default;
-
-    /**
      * @brief Initializes the material struct
      * @param color The color of the material (clamped to positive values)
      * @param roughness The roughness of the material (clamped to [0,1])
      * @param metallic The metalness of the material (clamped to [0,1])
      * @param ior Index of Refraction (clamped to positive values)
      */
-    Material(glm::vec4 color, float roughness, float metallic,
+    Material(glm::vec4 color = glm::vec4(1.0f), float roughness = 1.0f, float metallic = 0.0f,
         float ior = 1.5f);
 
     /**

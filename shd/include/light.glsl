@@ -22,7 +22,7 @@ layout(std430, binding = LIGHTS_BINDING) readonly buffer LightBuffer
 };
 
 #ifndef AMBIENT_LIGHT
-#define AMBIENT_LIGHT vec3(0.1f);
+#define AMBIENT_LIGHT vec3(0.01f);
 #endif //AMBIENT_LIGHT
 
 vec3 getAmbientLight()
@@ -32,7 +32,7 @@ vec3 getAmbientLight()
 
 vec3 getLightDirection(in Light l, in vec3 worldPos)
 {
-	return l.type == 0 ? normalize(-l.direction) : normalize(currentLight.position - worldPos);
+	return l.type == 0 ? normalize(-l.direction) : normalize(l.position - worldPos);
 }
 
 vec3 getLightRadiance(in Light l, in vec3 worldPos)

@@ -149,11 +149,12 @@ void Camera::processMouseMovement(double xoffset, double yoffset)
         glm::angleAxis(glm::radians(static_cast<float>(yoffset)), glm::vec3(1, 0, 0));
 }
 
-inline void Camera::setSpeed(float speed)
+void Camera::setSpeed(float speed)
 {
     if (speed > 0)
         this->m_speed = speed;
 }
+
 glm::vec3 Camera::forward() const { return rotation * glm::vec3(0, 0, -1); }
 glm::vec3 Camera::backward() const { return rotation * glm::vec3(0, 0, 1); }
 glm::vec3 Camera::up() const { return rotation * glm::vec3(0, 1, 0); }

@@ -68,6 +68,10 @@ public:
      */
     void update(const std::shared_ptr<Scene>& scene);
 
+    bool drawGuiWindow();
+
+    bool drawGuiContent();
+
     glm::vec3 color = glm::vec3(1.0f);                                      // all
     float cutOff = glm::radians(25.0f);                                     // spot
     glm::vec3 position = glm::vec3(0.0f, 1.0f, 0.0f);                       // spot, point    

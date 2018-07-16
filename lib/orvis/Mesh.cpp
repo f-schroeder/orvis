@@ -58,7 +58,7 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
     // - - - M A T E R I A L - - -
 
     aiString reltexPath;
-    for (aiTextureType type : {aiTextureType_DIFFUSE, aiTextureType_OPACITY, aiTextureType_SPECULAR, aiTextureType_SHININESS, aiTextureType_NORMALS, aiTextureType_HEIGHT, aiTextureType_LIGHTMAP })
+    for (aiTextureType type : {aiTextureType_DIFFUSE, aiTextureType_OPACITY, aiTextureType_SHININESS, aiTextureType_REFLECTION, aiTextureType_NORMALS, aiTextureType_HEIGHT, aiTextureType_LIGHTMAP })
     {
         //has texture
         if (assimpMat->GetTextureCount(type) > 0)
@@ -83,18 +83,18 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
                 }
                 break;
             }
-            case aiTextureType_SPECULAR: //roughness
-            {
-                m_textures[aiTextureType_SPECULAR] = std::make_shared<Texture>(absTexPath, 1);
-                material.setRoughness(m_textures[aiTextureType_SPECULAR]);
-                break;
-            }
-            case aiTextureType_SHININESS: //metallic
+            case aiTextureType_SHININESS: //roughness
             {
                 m_textures[aiTextureType_SHININESS] = std::make_shared<Texture>(absTexPath, 1);
-                material.setMetallic(m_textures[aiTextureType_SHININESS]);
+                material.setRoughness(m_textures[aiTextureType_SHININESS]);
                 break;
             }
+            case aiTextureType_REFLECTION: //metallic
+            {
+                m_textures[aiTextureType_REFLECTION] = std::make_shared<Texture>(absTexPath, 1);
+                material.setMetallic(m_textures[aiTextureType_REFLECTION]);
+                break;
+            }            
             case aiTextureType_NORMALS: //normal
             {
                 m_textures[aiTextureType_NORMALS] = std::make_shared<Texture>(absTexPath, 4);
@@ -143,18 +143,19 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
                 }
                 break;
             }
-            case aiTextureType_SPECULAR: //roughness
-            {
-                aiColor3D spec(0.0f, 0.0f, 0.0f);
-                assimpMat->Get(AI_MATKEY_COLOR_SPECULAR, spec);
-                material.setRoughness(spec.r);
-                break;
-            }
-            case aiTextureType_SHININESS: //metallic
+            case aiTextureType_SHININESS: //roughness
             {
                 float shn;
                 assimpMat->Get(AI_MATKEY_SHININESS, shn);
-                material.setMetallic(shn);
+                shn = glm::pow(2.0f / (shn + 2.0f), 0.25f); //transform shininess to roughness
+                material.setRoughness(shn);
+                break;
+            }
+            case aiTextureType_REFLECTION: //metallic
+            {
+                float refl;
+                assimpMat->Get(AI_MATKEY_REFLECTIVITY, refl);
+                material.setMetallic(refl);
                 break;
             }
             //case aiTextureType_NORMALS: //normal
