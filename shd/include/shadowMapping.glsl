@@ -10,6 +10,10 @@ float getPointShadow(in Light l, in vec3 worldPos, in vec3 lightDir)
 
 float getShadowPCF(in Light l, in vec3 worldPos, in vec3 worldNormal, in vec3 lightDir)
 {
+	//no shadow map available
+	if(l.shadowMap.x == 0 && l.shadowMap.y == 0)
+		return 1.0f;
+
     //transform position to light space
     vec4 worldPosLightSpace = l.lightSpaceMatrix * vec4(worldPos, 1.0f);
     worldPosLightSpace = worldPosLightSpace * 0.5f + 0.5f * worldPosLightSpace.w; // transform to [0,w] range  
@@ -47,6 +51,10 @@ float getShadowPCF(in Light l, in vec3 worldPos, in vec3 worldNormal, in vec3 li
 
 float getShadowBiased(in Light l, in vec3 worldPos, in vec3 worldNormal, in vec3 lightDir)
 {
+	//no shadow map available
+	if(l.shadowMap.x == 0 && l.shadowMap.y == 0)
+		return 1.0f;
+
     //transform position to light space
     vec4 worldPosLightSpace = l.lightSpaceMatrix * vec4(worldPos, 1.0f);
     worldPosLightSpace = worldPosLightSpace * 0.5f + 0.5f * worldPosLightSpace.w; // transform to [0,w] range   
@@ -64,6 +72,10 @@ float getShadowBiased(in Light l, in vec3 worldPos, in vec3 worldNormal, in vec3
 
 float calculateShadow(in Light l, in vec3 worldPos)
 {
+	//no shadow map available
+	if(l.shadowMap.x == 0 && l.shadowMap.y == 0)
+		return 1.0f;
+
     //transform position to light space
     vec4 worldPosLightSpace = l.lightSpaceMatrix * vec4(worldPos, 1.0f);
     worldPosLightSpace = worldPosLightSpace * 0.5f + 0.5f * worldPosLightSpace.w; // transform to [0,w] range   

@@ -68,8 +68,16 @@ public:
      */
     void update(const std::shared_ptr<Scene>& scene);
 
+    /**
+    * @brief Draws a ImGui-window containing the light parameters.
+    * @return true if the parameters were changed.
+    */
     bool drawGuiWindow();
 
+    /**
+    * @brief Draws the ImGui-content containing the light parameters.
+    * @return true if the parameters were changed.
+    */
     bool drawGuiContent();
 
     glm::vec3 color = glm::vec3(1.0f);                                      // all

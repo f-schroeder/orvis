@@ -29,8 +29,10 @@ constexpr float SENSITIVTY = 0.05f;
 
 struct GpuCamera
 {
-    glm::vec4 position = {0.f, 0.f, 0.f, 1.f};
-    glm::vec4 direction = { 0.f, 0.f, 0.f, 0.f };
+    glm::vec3 position = {0.f, 0.f, 0.f};
+    float gamma = 2.2f;
+    glm::vec3 direction = {0.f, 0.f, 0.f};
+    float exposure = 1.0f;
     glm::mat4 view;
     glm::mat4 projection;
     glm::mat4 invVP;
@@ -68,7 +70,8 @@ public:
 
     /**
     * @brief Puts camera data into a GpuCamera struct and uploads it to the GPU.
-    * Also binds the buffer to binding::BufferBinding::cameraParameters
+    * Also binds the buffer to binding::BufferBinding::cameraParameters.
+    * Only does so if the camera parameters changed since the last update.
     */
     void uploadToGpu();
 
@@ -92,6 +95,8 @@ public:
     // camera attributes
     glm::vec3 position; //!< The camera position.
     glm::quat rotation; //!< The camera rotation quaternion.
+    float gamma; //!< The gamma value for gamma correction.
+    float exposure; //!< The exposure for tone mapping.
 
     /** @return The local forward vector ({0, 0, -1} rotated). */
     glm::vec3 forward() const;
@@ -115,6 +120,18 @@ public:
     /** @brief Sets the movement speed of the camera. */
     void setSpeed(float speed);
 
+    /** 
+    * @brief Draws a ImGui-window containing the camera parameters.  
+    * @return true if the parameters were changed.
+    */
+    bool drawGuiWindow();
+
+    /**
+    * @brief Draws the ImGui-content containing the camera parameters.
+    * @return true if the parameters were changed.
+    */
+    bool drawGuiContent();
+
 private:
     void processKeyboard(Direction direction, double deltaTime, SpeedModifier speedModifier);
     void processMouseMovement(double xoffset, double yoffset);
@@ -137,4 +154,6 @@ private:
     glm::mat4 m_projection;
 
     Buffer<GpuCamera> m_cameraBuffer;
+
+    size_t m_camHash;
 };

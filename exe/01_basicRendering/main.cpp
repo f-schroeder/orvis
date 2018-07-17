@@ -20,7 +20,7 @@ int main()
     auto cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.1f, 3000.f));
 
     Cubemap skybox;
-    skybox.generateCubemap(util::resourcesPath / "textures/skybox", ".jpg");
+    skybox.generateCubemap(util::resourcesPath / "textures/rustig/hdr");
 
     Program shaderProg;
     shaderProg.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/multiDraw.vert"));
@@ -29,9 +29,9 @@ int main()
     Scene scene("sponza/sponza.obj");
     scene.setCamera(cam);
 
-    auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, {100.0f, 100.0f, 100.0f});
+    auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, glm::vec3(100000.0f));
     auto l2 = Light::makeDirectionalLight();
-    auto l3 = Light::makeSpotLight({ 0.0f, 100.0f, 0.0f }, {-1,-1,-1}, { 100.0f, 100.0f, 100.0f });
+    auto l3 = Light::makeSpotLight({ 0.0f, 100.0f, 0.0f }, {-1,-1,-1}, glm::vec3(100000.0f));
     scene.addLight(l1);
     scene.addLight(l2);
     scene.addLight(l3);
@@ -55,6 +55,7 @@ int main()
         // --- RENDERING ---
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cam->update(window);
+        cam->drawGuiWindow();
 
         skybox.renderAsSkybox(cam);
 

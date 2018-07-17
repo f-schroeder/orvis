@@ -85,8 +85,11 @@ vec4 getPBRColor(in uint materialIndex, in vec3 worldPos, in vec3 normal, in vec
     vec3 ambient = getAmbientLight() * mat.albedo.xyz * mat.ao;
     vec3 color = ambient + Lo;
 	
-    color = color / (color + vec3(1.0f));
-    color = pow(color, vec3(1.0f/2.2f));
+	// tone mapping
+	color = vec3(1.0f) - exp(-color * camera.exposure);
+
+	// gamma
+    color = pow(color, vec3(1.0f/camera.gamma));
 
 	return vec4(color, mat.albedo.a);
 }

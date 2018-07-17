@@ -1,16 +1,20 @@
 #include "Camera.hpp"
 #include <imgui.h>
+#include <functional>
+#include <glm/gtx/hash.hpp>
 
 Camera::Camera(glm::mat4 projection, glm::vec3 position, glm::vec3 target, glm::vec3 up)
     : position(position)
     , rotation(glm::quat_cast(glm::lookAt(position, target, up)))
+    , gamma(2.2f)
+    , exposure(1.0f)
     , m_startPosition(position)
     , m_startRotation(rotation)
     , m_speed(SPEED)
     , m_sensitivity(SENSITIVTY)
     , m_lastTime(glfwGetTime())
     , m_projection(projection)
-    , m_cameraBuffer({ glm::vec4(position, 1.0f), glm::vec4(forward(), 0.0f), view(), projection, glm::inverse(projection * glm::mat4(glm::mat3(view()))) }, GL_DYNAMIC_STORAGE_BIT)
+    , m_cameraBuffer({ position, gamma, forward(), exposure, view(), projection, glm::inverse(projection * glm::mat4(glm::mat3(view()))) }, GL_DYNAMIC_STORAGE_BIT)
 {
 }
 
@@ -79,21 +83,29 @@ void Camera::update(GLFWwindow* window)
         else
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
+    uploadToGpu();
 }
 
 void Camera::uploadToGpu()
 {
-    const glm::mat4 v = view();
-    const glm::mat4 p = projection();
-    const glm::mat4 invVP = glm::inverse(p * glm::mat4(glm::mat3(v)));
-    m_cameraBuffer.assign({ glm::vec4(position, 1.0f), glm::vec4(forward(), 0.0f), v, p, invVP });
-    m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
+    size_t hash = std::hash<glm::vec3>{}(position) + std::hash<glm::quat>{}(rotation) + std::hash<float>{}(gamma) + std::hash<float>{}(exposure);
+
+    if (m_camHash != hash)
+    {
+        const glm::mat4 v = view();
+        const glm::mat4 p = projection();
+        const glm::mat4 invVP = glm::inverse(p * glm::mat4(glm::mat3(v)));
+        m_cameraBuffer.assign({ position, gamma, forward(), exposure, v, p, invVP });
+        m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
+
+        m_camHash = hash;
+    }
 }
 
 void Camera::uploadToGpu(const glm::mat4& view, const glm::mat4& proj)
 {
     const glm::mat4 invVP = glm::inverse(proj * glm::mat4(glm::mat3(view)));
-    m_cameraBuffer.assign({ view[3], glm::inverse(view)[2], view, proj, invVP });
+    m_cameraBuffer.assign({ glm::vec3(view[3]), gamma, glm::vec3(glm::inverse(view)[2]), exposure, view, proj, invVP });
     m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
 }
 
@@ -170,4 +182,34 @@ void Camera::setProjection(glm::mat4 projection)
 glm::mat4 Camera::projection() const
 {
     return m_projection;
+}
+
+bool Camera::drawGuiWindow()
+{
+    ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiSetCond_FirstUseEver);
+    ImGui::Begin("Camera");
+    const bool changed = drawGuiContent();
+    ImGui::End();
+    return changed;
+}
+
+bool Camera::drawGuiContent()
+{
+    ImGui::PushID(this);
+
+    bool changed = false;
+
+    changed |= ImGui::DragFloat("Gamma", &gamma, 0.1f, 0.0f);
+    changed |= ImGui::DragFloat("Exposure", &exposure, 0.1f, 0.0f);
+
+    if (changed)
+    {
+        gamma = glm::max(gamma, 0.0f);
+        exposure = glm::max(exposure, 0.0f);
+        uploadToGpu();
+    }
+
+    ImGui::PopID();
+
+    return changed;
 }
