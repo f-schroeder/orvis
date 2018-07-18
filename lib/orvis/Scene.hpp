@@ -58,6 +58,9 @@ public:
     /** @brief Sets the camera and adjusts its speed to match the scene dimansions. */
     void setCamera(const std::shared_ptr<Camera>& camera);
 
+    /** @return The list of all attached meshes. */
+    const std::vector<std::shared_ptr<Mesh>>& getMeshes() const;
+
 private:
     std::vector<std::shared_ptr<Light>> m_lights;
     std::vector<std::shared_ptr<Mesh>> m_meshes;

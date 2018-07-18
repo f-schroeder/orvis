@@ -13,7 +13,7 @@ constexpr int height = 900;
 int main()
 {
     // init glfw, open window, manage context
-    Window window (width, height);
+    Window window(width, height);
 
     util::enableDebugCallback();
 
@@ -26,12 +26,12 @@ int main()
     shaderProg.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/multiDraw.vert"));
     shaderProg.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/basicRendering.frag"));
 
-    Scene scene("sponza/sponza.obj");
+    Scene scene("sphere.obj");
     scene.setCamera(cam);
 
     auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, glm::vec3(100000.0f));
     auto l2 = Light::makeDirectionalLight();
-    auto l3 = Light::makeSpotLight({ 0.0f, 100.0f, 0.0f }, {-1,-1,-1}, glm::vec3(100000.0f));
+    auto l3 = Light::makeSpotLight({ 0.0f, 100.0f, 0.0f }, { -1,-1,-1 }, glm::vec3(100000.0f));
     scene.addLight(l1);
     scene.addLight(l2);
     scene.addLight(l3);
@@ -48,7 +48,7 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    while(float deltatime = window.update() > 0.0f)
+    while (float deltatime = window.update() > 0.0f)
     {
         timer.start();
 
@@ -59,10 +59,13 @@ int main()
 
         skybox.renderAsSkybox(cam);
 
-        scene.render(shaderProg);        
+        scene.render(shaderProg);
 
         if (l1->drawGuiWindow() || l2->drawGuiWindow() || l3->drawGuiWindow())
             scene.updateLightBuffer();
+
+        if (scene.getMeshes()[0]->material.drawGuiWindow())
+            scene.updateMaterialBuffer();
 
         timer.stop();
         timer.drawGuiWindow(window);

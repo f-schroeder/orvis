@@ -249,6 +249,11 @@ void Scene::setCamera(const std::shared_ptr<Camera>& camera)
     m_camera->setSpeed(0.1f * glm::length(bounds[1] - bounds[0]));
 }
 
+const std::vector<std::shared_ptr<Mesh>>& Scene::getMeshes() const
+{
+    return m_meshes;
+}
+
 void Scene::updateMultiDrawBuffers()
 {
     std::vector<GLuint> allIndices;

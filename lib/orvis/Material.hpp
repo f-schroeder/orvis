@@ -65,6 +65,18 @@ public:
     void  setIOR(float ior);
     float getIOR() const;
 
+    /**
+    * @brief Draws a ImGui-window containing the material parameters.
+    * @return true if the parameters were changed.
+    */
+    bool drawGuiWindow();
+
+    /**
+    * @brief Draws the ImGui-content containing the material parameters.
+    * @return true if the parameters were changed.
+    */
+    bool drawGuiContent();
+
 private:
     //uvec2 can be packed vec4 or bindless sampler2D
     glm::uvec2 m_albedo{ 0, 0 };

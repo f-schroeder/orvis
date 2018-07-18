@@ -7,6 +7,8 @@
 #define PI 3.14159265359f
 #endif //PI
 
+layout(binding = SKYBOX_BINDING) uniform samplerCube cubeTexture;
+
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0f - F0) * pow(1.0f - cosTheta, 5.0f);

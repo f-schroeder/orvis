@@ -199,8 +199,8 @@ bool Camera::drawGuiContent()
 
     bool changed = false;
 
-    changed |= ImGui::DragFloat("Gamma", &gamma, 0.1f, 0.0f);
-    changed |= ImGui::DragFloat("Exposure", &exposure, 0.1f, 0.0f);
+    changed |= ImGui::DragFloat("Gamma", &gamma, 0.1f, 0.0f, 10.0f);
+    changed |= ImGui::DragFloat("Exposure", &exposure, 0.1f, 0.0f, 10.0f);
 
     if (changed)
     {

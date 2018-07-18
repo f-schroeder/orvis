@@ -23,12 +23,10 @@ void main()
 //
 //	fragColor.xyz += getLightRadiance(l, worldPos) * dot(normal, getLightDirection(l, worldPos)) * mat.albedo.xyz;
 //
-	fragColor = getPBRColor(drawID, worldPos, normal, normalize(camera.position.xyz - worldPos), texCoord);
+	fragColor = getPBRColor(drawID, worldPos, normalize(normal), normalize(camera.position.xyz - worldPos), texCoord);
 
 //	Material mat = getMaterial(drawID, texCoord);
 //	fragColor = vec4(vec3(mat.roughness), 1.0f);
 
 //	fragColor = vec4(0.5f * (normal + 1.0f), 1.0f);
-
-	fragColor.a = 1.0f;
 }

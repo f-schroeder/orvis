@@ -160,30 +160,24 @@ bool Light::drawGuiContent()
 
     if (ImGui::CollapsingHeader((typeString + std::string("Light")).c_str()))
     {
-
         float intensity = glm::max(glm::compMax(color), 1.0f);
         if (ImGui::ColorEdit3("Color", glm::value_ptr(color), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_PickerHueWheel) ||
-            ImGui::DragFloat("Intensity", &intensity))
+            ImGui::DragFloat("Intensity", &intensity, intensity/10.0f, 1.0f, 1000000000.0f))
         {
             color = color / glm::max(glm::compMax(color), 1.0f) * intensity;
             changed = true;
         }
 
         if (m_type == LightType::point || m_type == LightType::spot)
-            if (ImGui::DragFloat3("Position", glm::value_ptr(position)))
-                changed = true;
+            changed |= ImGui::DragFloat3("Position", glm::value_ptr(position));
 
         if (m_type == LightType::directional || m_type == LightType::spot)
-            if (ImGui::SliderFloat3("Direction", glm::value_ptr(direction), -1.0f, 1.0f))
-                changed = true;
+            changed |= ImGui::SliderFloat3("Direction", glm::value_ptr(direction), -1.0f, 1.0f);
 
         if (m_type == LightType::spot)
-            if (ImGui::SliderFloat("Cutoff", &cutOff, 0.0f, glm::pi<float>()))
-                changed = true;
+            changed |= ImGui::SliderFloat("Cutoff", &cutOff, 0.0f, glm::pi<float>());
 
-        if (ImGui::SliderInt("PCF size", &pcfKernelSize, 0, 10))
-            changed = true;
-
+        changed |= ImGui::SliderInt("PCF size", &pcfKernelSize, 0, 10);
     }
 
     ImGui::PopID();

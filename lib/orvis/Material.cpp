@@ -1,5 +1,6 @@
 #include "Material.hpp"
 #include "Util.hpp"
+#include <imgui.h>
 
 Material::Material(glm::vec4 color, float roughness, float metallic, float ior)
 {
@@ -63,7 +64,7 @@ float Material::getRoughness() const
 }
 
 void Material::setRoughness(std::variant<float, std::shared_ptr<Texture>> roughness)
-{    
+{
     if (std::holds_alternative<float>(roughness))
     {
         m_roughness.x = glm::floatBitsToUint(glm::clamp(std::get<float>(roughness), 0.0f, 1.0f));
@@ -111,4 +112,59 @@ float Material::getIOR() const
 void Material::setIOR(float ior)
 {
     m_ior = glm::max(0.0f, ior);
+}
+
+bool Material::drawGuiWindow()
+{
+    ImGui::SetNextWindowSize(ImVec2(300, 100), ImGuiSetCond_FirstUseEver);
+    ImGui::Begin("Material");
+    const bool changed = drawGuiContent();
+    ImGui::End();
+    return changed;
+}
+
+bool Material::drawGuiContent()
+{
+    ImGui::PushID(this);
+
+    bool changed = false;
+
+    if (ImGui::CollapsingHeader(std::string("Material").c_str()))
+    {
+        if (!util::getBit(m_isTextureBitset, MAT_COLOR_BIT))
+        {
+            glm::vec4 color = getColor();
+            if (ImGui::ColorEdit4("Albedo", glm::value_ptr(color), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_PickerHueWheel))
+            {
+                setColor(color);
+                changed = true;
+            }
+        }
+
+        if (!util::getBit(m_isTextureBitset, MAT_ROUGHNESS_BIT))
+        {
+            float r = getRoughness();
+            if (ImGui::SliderFloat("Roughness", &r, 0.0f, 1.0f))
+            {
+                setRoughness(r);
+                changed = true;
+            }
+        }
+
+        if (!util::getBit(m_isTextureBitset, MAT_METALLIC_BIT))
+        {
+            float m = getMetallic();
+            if (ImGui::SliderFloat("Metallic", &m, 0.0f, 1.0f))
+            {
+                setMetallic(m);
+                changed = true;
+            }
+        }
+
+        changed |= ImGui::DragFloat("IOR", &m_ior, 0.001f, 0.0f, 10.0f);
+    }
+
+    ImGui::PopID();
+
+    return changed;
 }
