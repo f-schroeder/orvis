@@ -49,6 +49,9 @@ public:
     /** @brief Uploads all lights to the GPU. */
     void updateLightBuffer();
 
+    /** @brief Uploads all lights to the GPU. */
+    void updateShadowMaps();
+
     /** @brief Adds a mesh to the scene and updates all mesh related buffers */
     void addMesh(const std::shared_ptr<Mesh>& mesh);
 
@@ -79,6 +82,7 @@ private:
     Buffer<IndirectDrawCommand> m_indirectDrawBuffer;
 
     Buffer<Light> m_lightBuffer;
+    Buffer<int> m_lightIndexBuffer;
 
     Program m_cullingProgram;
 

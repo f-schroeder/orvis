@@ -1,6 +1,5 @@
 #pragma once
 #include "glm/glm.hpp"
-#include "Createable.hpp"
 #include <glbinding/gl/gl.h>
 #include "Texture.hpp"
 
@@ -18,7 +17,7 @@ enum MaterialTextureBitsetIndex : unsigned int
 /**
  * @brief Struct containing PBR material information passed to the shader
  */
-class Material : Createable<Material>
+class Material
 {
 public:
     /**

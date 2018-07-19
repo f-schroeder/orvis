@@ -4,29 +4,37 @@
 
 FrameBuffer::FrameBuffer() { glCreateFramebuffers(1, &m_fbo); }
 
-FrameBuffer::FrameBuffer(glm::ivec2 size, bool useDepthTexture)
+FrameBuffer::FrameBuffer(glm::ivec2 depthTextureSize)
     : FrameBuffer()
 {
-    assert(glm::all(glm::greaterThan(size, glm::ivec2(0))) && "Size must be greater than 0!");
+    assert(glm::all(glm::greaterThan(depthTextureSize, glm::ivec2(0))) && "Size must be greater than 0!");
 
-    m_size = size;
-    m_useDepth = useDepthTexture;
+    m_size = depthTextureSize;
 
-    if (useDepthTexture)
-    {
-        glCreateRenderbuffers(1, &m_rbo);
-        glNamedRenderbufferStorage(
-            m_rbo, GL_DEPTH_COMPONENT32F, size.x, size.y);
-        glNamedFramebufferRenderbuffer(
-            m_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
-        check();
-    }
+    setDepthAttachment(std::make_shared<Texture>(GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, depthTextureSize));
 }
 
-void FrameBuffer::addColorAttachment(unsigned int                    attachmentIndex,
+void FrameBuffer::setDepthAttachment(const std::shared_ptr<Texture>& texture)
+{
+    if (m_size != glm::ivec2(0))
+        assert(glm::ivec2(texture->getSize()) == m_size && "Texture and Framebuffer sizes mismatch!");
+    else
+        m_size = glm::ivec2(texture->getSize());
+
+    m_depthTexture = texture;
+
+    glNamedFramebufferTexture(
+        m_fbo, GL_DEPTH_ATTACHMENT, texture->id(), 0);
+    check();
+}
+
+void FrameBuffer::addColorAttachment(unsigned int attachmentIndex,
     const std::shared_ptr<Texture>& texture)
 {
-    assert(glm::ivec2(texture->getSize()) == m_size && "Texture and Framebuffer sizes mismatch!");
+    if (m_size != glm::ivec2(0))
+        assert(glm::ivec2(texture->getSize()) == m_size && "Texture and Framebuffer sizes mismatch!");
+    else
+        m_size = glm::ivec2(texture->getSize());
 
     m_colorAttachments[attachmentIndex] = texture;
 
@@ -51,6 +59,11 @@ std::shared_ptr<Texture> FrameBuffer::getColorTexture(unsigned int attachmentInd
     return m_colorAttachments[attachmentIndex];
 }
 
+std::shared_ptr<Texture> FrameBuffer::getDepthTexture() const
+{
+    return m_depthTexture;
+}
+
 bool FrameBuffer::check()
 {
     const auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -70,19 +83,12 @@ void FrameBuffer::resize(glm::ivec2 size)
 
     if (m_fbo != GL_INVALID_VALUE)
         glDeleteFramebuffers(1, &m_fbo);
-    if (m_rbo != GL_INVALID_VALUE)
-        glDeleteRenderbuffers(1, &m_rbo);
 
     glCreateFramebuffers(1, &m_fbo);
 
-    if (m_useDepth)
-    {
-        glCreateRenderbuffers(1, &m_rbo);
-        glNamedRenderbufferStorage(
-            m_rbo, GL_DEPTH_COMPONENT32F, size.x, size.y);
-        glNamedFramebufferRenderbuffer(
-            m_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
-    }
+    m_depthTexture->resize(m_depthTexture->getTarget(), m_depthTexture->getFormat(), size);
+    glNamedFramebufferTexture(
+        m_fbo, GL_DEPTH_ATTACHMENT, m_depthTexture->id(), 0);
 
     std::for_each(m_colorAttachments.begin(), m_colorAttachments.end(), [&](auto& attachment) {
         attachment.second->resize(
@@ -101,14 +107,10 @@ void FrameBuffer::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 GLuint FrameBuffer::id() const { return m_fbo; }
 
-GLuint FrameBuffer::renderbufferId() const { return m_rbo; }
-
 FrameBuffer::~FrameBuffer()
 {
     if (m_fbo != GL_INVALID_VALUE)
         glDeleteFramebuffers(1, &m_fbo);
-    if (m_rbo != GL_INVALID_VALUE)
-        glDeleteRenderbuffers(1, &m_rbo);
 }
 
 void FrameBuffer::blit(const std::shared_ptr<FrameBuffer>& other) const
@@ -150,11 +152,11 @@ PingPongBuffer::PingPongBuffer(glm::ivec2 size, bool useDepthTexture)
     m_textures[0] = std::make_shared<Texture>(GL_TEXTURE_2D, GL_RGB16F, size);
     m_textures[1] = std::make_shared<Texture>(GL_TEXTURE_2D, GL_RGB16F, size);
 
-    m_fbos[0] = std::make_shared<FrameBuffer>(size, useDepthTexture);
+    m_fbos[0] = useDepthTexture ? std::make_shared<FrameBuffer>(size) : std::make_shared<FrameBuffer>();
     m_fbos[0]->addColorAttachment(0, m_textures[0]);
     m_fbos[0]->updateDrawBuffers();
 
-    m_fbos[1] = std::make_shared<FrameBuffer>(size, useDepthTexture);
+    m_fbos[1] = useDepthTexture ? std::make_shared<FrameBuffer>(size) : std::make_shared<FrameBuffer>();
     m_fbos[1]->addColorAttachment(0, m_textures[1]);
     m_fbos[1]->updateDrawBuffers();
 }

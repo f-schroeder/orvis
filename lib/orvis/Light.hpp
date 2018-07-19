@@ -24,6 +24,8 @@ class Light
 {
 public:
 
+    friend Scene;
+
     /** @brief Standard constructor. Only for deafult-constructability. Use factory functions (make...()) to create a light. */
     Light() = default;
 
@@ -51,7 +53,7 @@ public:
     * @param direction The direction of the light source
     * @param color The color of the light source (clamped to positive values)
     */
-    static std::shared_ptr<Light> makeDirectionalLight(glm::vec3 direction = glm::normalize(glm::vec3(0.5f, -1.0f, -0.5f)), glm::vec3 color = glm::vec3(1.0f));
+    static std::shared_ptr<Light> makeDirectionalLight(glm::vec3 direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f)), glm::vec3 color = glm::vec3(1.0f));
 
     /**
     * @brief Initializes a directional light
@@ -66,7 +68,7 @@ public:
      * @brief Updates the light space matrix and renders the shadow map
      * @param scene The scene that is rendered into the shadow map
      */
-    void update(const std::shared_ptr<Scene>& scene);
+    void updateShadowMap(const Scene& scene) const;
 
     /**
     * @brief Draws a ImGui-window containing the light parameters.
@@ -91,16 +93,16 @@ private:
     {
         ShadowMap();
 
-        void render(const std::shared_ptr<Scene>& scene) const;
+        void render(const Scene& scene) const;
 
-        Texture shadowTexture{ GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, glm::ivec2(1024, 1024) };
-        FrameBuffer shadowFBO{ shadowTexture.getSize() };
+        //Texture shadowTexture{ GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F,  };
+        FrameBuffer shadowFBO{ glm::ivec2(1024, 1024) };
         Program shadowProgram;
     };
 
     Light(glm::vec3 position, glm::vec3 direction, glm::vec3 color, float cutOff, LightType type);
 
-    void recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene);
+    void recalculateLightSpaceMatrix(const Scene& scene);
 
     LightType m_type = LightType::point; // 0 directional, 1 point light, 2 spot light
 

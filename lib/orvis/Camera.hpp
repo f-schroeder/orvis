@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include "Createable.hpp"
 #include "Buffer.hpp"
 
 enum class Direction
@@ -49,7 +48,7 @@ struct GpuCamera
  *		T/G:		increase/decrease camera movement speed
  *		SPACE:		reset camera
  */
-class Camera : Createable<Camera>
+class Camera
 {
 public:
     /**

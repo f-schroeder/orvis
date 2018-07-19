@@ -9,7 +9,7 @@ using namespace gl;
 /** @brief A Class to load, generate and render cubemaps.
  * @details
  */
-class Cubemap : Createable<Cubemap>
+class Cubemap
 {
 public:
     /** @brief Creates a new shader program and gets a uniform location for invViewProj Matrix.

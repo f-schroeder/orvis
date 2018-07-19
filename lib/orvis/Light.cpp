@@ -43,13 +43,12 @@ std::shared_ptr<Light> Light::makeSpotLight(glm::vec3 position, glm::vec3 direct
     return std::shared_ptr<Light>(new Light(position, direction, color, cutOff, LightType::spot));
 }
 
-void Light::update(const std::shared_ptr<Scene>& scene)
+void Light::updateShadowMap(const Scene& scene) const
 {
-    recalculateLightSpaceMatrix(scene);
-    //m_shadowMap->render(scene);
+    m_shadowMap->render(scene);
 }
 
-void Light::recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene)
+void Light::recalculateLightSpaceMatrix(const Scene& scene)
 {
     glm::vec3 up(0.0f, 1.0f, 0.0f);
     if (glm::length(glm::cross(direction, up)) < 0.01f)
@@ -57,7 +56,7 @@ void Light::recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene)
         up = glm::vec3(1.0f, 0.0f, 0.0f);
     }
 
-    const Bounds& b = scene->bounds;
+    const Bounds& b = scene.bounds;
     const float bboxSize = glm::length(b[1] - b[0]);
 
     glm::mat4 view, projection;
@@ -77,13 +76,13 @@ void Light::recalculateLightSpaceMatrix(const std::shared_ptr<Scene>& scene)
     else if (m_type == LightType::spot)
     {
         // NOTE: ACOS BECAUSE CUTOFF HAS COS BAKED IN
-        projection = glm::perspective(2.0f*glm::acos(cutOff + 0.1f), static_cast<float>(m_shadowMap->shadowTexture.getSize().x) / static_cast<float>(m_shadowMap->shadowTexture.getSize().y), 0.1f, bboxSize);
+        projection = glm::perspectiveFov(2.0f*glm::acos(glm::clamp(cutOff/* + 0.1f*/, 0.1f, 0.9f)) , static_cast<float>(m_shadowMap->shadowFBO.getDepthTexture()->getSize().x), static_cast<float>(m_shadowMap->shadowFBO.getDepthTexture()->getSize().y), 0.1f, bboxSize);
         view = glm::lookAt(position, position + direction, up);
     }
     else if (m_type == LightType::point)
     {
         // TODO is cutoff supposed to be used here? or 90 degrees (cube)?
-        projection = glm::perspective(glm::radians(90.0f), static_cast<float>(m_shadowMap->shadowTexture.getSize().x) / static_cast<float>(m_shadowMap->shadowTexture.getSize().y), 0.1f, bboxSize);
+        projection = glm::perspective(glm::radians(90.0f), static_cast<float>(m_shadowMap->shadowFBO.getDepthTexture()->getSize().x) / static_cast<float>(m_shadowMap->shadowFBO.getDepthTexture()->getSize().y), 0.1f, bboxSize);
         view = glm::mat4(1.0f); // calculate finished matrix in shader
     }
 
@@ -94,34 +93,37 @@ Light::Light(glm::vec3 position, glm::vec3 direction, glm::vec3 color, float cut
     color(color), cutOff(cutOff), position(position), direction(direction), m_type(type)
 {
     m_shadowMap = std::make_unique<ShadowMap>();
-    m_shadowMap->shadowTexture.set(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_shadowMap->shadowTexture.set(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    m_shadowMap->shadowTexture.set(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-    m_shadowMap->shadowTexture.set(GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    m_shadowMapHandle = m_shadowMap->shadowTexture.handle();
+    m_shadowMap->shadowFBO.getDepthTexture()->set(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_shadowMap->shadowFBO.getDepthTexture()->set(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_shadowMap->shadowFBO.getDepthTexture()->set(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    m_shadowMap->shadowFBO.getDepthTexture()->set(GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    m_shadowMapHandle = m_shadowMap->shadowFBO.getDepthTexture()->handle();
 }
 
 Light::ShadowMap::ShadowMap()
 {
-    //shadowProgram.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/shadowMap.vert"));
-    //shadowProgram.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/shadowMap.frag"));
+    shadowProgram.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/lightTransform.vert"));
+    shadowProgram.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/shadowMap.frag"));
 }
 
-void Light::ShadowMap::render(const std::shared_ptr<Scene>& scene) const
+void Light::ShadowMap::render(const Scene& scene) const
 {
     // store old viewport
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
 
+    shadowFBO.bind();
+
     // set SM render settings
-    glViewport(0, 0, shadowTexture.getSize().x, shadowTexture.getSize().y);
+    glViewport(0, 0, shadowFBO.getDepthTexture()->getSize().x, shadowFBO.getDepthTexture()->getSize().y);
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_FRONT);
 
     // render SM
-    //shadowProgram.use();
-    shadowFBO.bind();
-    //scene->render();
+    //shadowProgram.use();    
+    scene.render(shadowProgram);
+
+    shadowFBO.getDepthTexture()->generateMipmaps();
 
     // restore previous render settings
     FrameBuffer::unbind();
@@ -175,7 +177,7 @@ bool Light::drawGuiContent()
             changed |= ImGui::SliderFloat3("Direction", glm::value_ptr(direction), -1.0f, 1.0f);
 
         if (m_type == LightType::spot)
-            changed |= ImGui::SliderFloat("Cutoff", &cutOff, 0.0f, glm::pi<float>());
+            changed |= ImGui::SliderFloat("Cutoff", &cutOff, 0.1f, 1.0f);
 
         changed |= ImGui::SliderInt("PCF size", &pcfKernelSize, 0, 10);
     }

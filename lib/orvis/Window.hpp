@@ -1,12 +1,11 @@
 #pragma once
 #include <GLFW/glfw3.h>
 #include <unordered_map>
-#include "Createable.hpp"
 
 /**
  * @brief A light wrapper for GLFW windows.
  */
-class Window : Createable<Window>
+class Window
 {
 public:
     /** Maps glfw window hints to their values. */

@@ -3,7 +3,6 @@
 #include "Texture.hpp"
 #include <array>
 #include <unordered_map>
-#include "Createable.hpp"
 
 using namespace gl;
 
@@ -12,7 +11,7 @@ using namespace gl;
  * @details Every framebuffer holds its own framebuffer-handle and in case the depth texture is used
  * a renderbuffer-handle. It also manages the color-attachments and the corresponding drawbuffers.
  */
-class FrameBuffer : Createable<FrameBuffer>
+class FrameBuffer
 {
 public:
     /**
@@ -21,13 +20,16 @@ public:
     FrameBuffer();
 
     /**
-     * @brief Constructs a framebuffer object with the given size.
-     *        If specified, a depth texture is automatically attached to the framebuffer.
-     * @param size The size of the framebuffer (should be greater than 0 in all dimensions).
-     * @param useDepthTexture Specifies whether a depth texture should be created and used for this
-     * framebuffer.
+     * @brief Constructs a framebuffer object and attaches a new depth texture with the given size.
+     * @param depthTextureSize The size of the depth texture attached to the framebuffer (should be greater than 0 in all dimensions).
      */
-    explicit FrameBuffer(glm::ivec2 size, bool useDepthTexture = true);
+    explicit FrameBuffer(glm::ivec2 depthTextureSize);
+
+    /**
+    * @brief Sets a Texture as the framebuffers depth attachment.
+    * @param texture The Texture that is attached to the depth-attachment.
+    */
+    void setDepthAttachment(const std::shared_ptr<Texture>& texture);
 
     /**
      * @brief Adds a Texture to the framebuffer at the given attachment index.
@@ -49,6 +51,11 @@ public:
      * @return The Texture attached to that index.
      */
     std::shared_ptr<Texture> getColorTexture(unsigned int attachmentIndex);
+
+    /**
+    * @return  the Texture attached to the depth-attachment.
+    */
+    std::shared_ptr<Texture> getDepthTexture() const;
 
     /**
      * @brief Checks the current state of the framebuffer (i.e. looks for OpenGL errors).
@@ -78,11 +85,6 @@ public:
     GLuint id() const;
 
     /**
-     *@brief Gets the OpenGL-ID of the renderbuffer object.
-     */
-    GLuint renderbufferId() const;
-
-    /**
      * @brief Destructor. Destroys all allocated GPU-resources.
      */
     ~FrameBuffer();
@@ -104,12 +106,11 @@ public:
 
 private:
     std::unordered_map<unsigned int, std::shared_ptr<Texture>> m_colorAttachments;
+    std::shared_ptr<Texture> m_depthTexture;
 
     glm::ivec2 m_size     = glm::ivec2(0, 0);
-    bool       m_useDepth = false;
 
     GLuint m_fbo = GL_INVALID_INDEX;
-    GLuint m_rbo = GL_INVALID_INDEX;
 };
 
 /**

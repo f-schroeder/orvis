@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glbinding/gl/gl.h>
-#include "Createable.hpp"
 #include "Shader.hpp"
 #include "VertexArray.hpp"
 #include "Camera.hpp"
@@ -10,7 +9,7 @@ using namespace gl;
 /**
  * @brief Class for rendering a screen filling triangle (SFT). 
  */
-class ScreenFiller : Createable<ScreenFiller>
+class ScreenFiller
 {
 public:
     /**

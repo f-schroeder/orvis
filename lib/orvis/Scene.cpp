@@ -104,6 +104,8 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
         updateMaterialBuffer();
 
         m_cullingProgram.attachNew(GL_COMPUTE_SHADER, ShaderFile::load("compute/viewFrustumCulling.comp"));
+
+        m_lightIndexBuffer.resize(1, GL_DYNAMIC_STORAGE_BIT);
     }
 
     modelMatThread.join();
@@ -127,9 +129,9 @@ void Scene::render(const Program& program) const
     m_camera->uploadToGpu();
 
     // CULLING
-    m_cullingProgram.use();
+    /*m_cullingProgram.use();
     glDispatchCompute(static_cast<GLuint>(glm::ceil(m_indirectDrawBuffer.size() / 64.0f)), 1, 1);
-    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);*/
 
     // DRAW
     program.use();
@@ -217,6 +219,7 @@ void Scene::updateLightBuffer()
 #pragma omp parallel for
     for (int i = 0; i < static_cast<int>(lights.size()); ++i)
     {
+        m_lights[i]->recalculateLightSpaceMatrix(*this);
         lights[i] = *m_lights[i];
     }
 
@@ -224,6 +227,16 @@ void Scene::updateLightBuffer()
         m_lightBuffer.resize(lights.size(), GL_DYNAMIC_STORAGE_BIT);
 
     m_lightBuffer.assign(lights);
+}
+
+void Scene::updateShadowMaps()
+{
+    for (int i = 0; i < static_cast<int>(m_lights.size()); ++i)
+    {
+        m_lightIndexBuffer.assign(i);
+        m_lightIndexBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::lightIndex);
+        m_lights[i]->updateShadowMap(*this);
+    }
 }
 
 void Scene::addMesh(const std::shared_ptr<Mesh>& mesh)
@@ -241,6 +254,7 @@ void Scene::addLight(const std::shared_ptr<Light>& light)
 {
     m_lights.push_back(light);
     updateLightBuffer();
+    updateShadowMaps();
 }
 
 void Scene::setCamera(const std::shared_ptr<Camera>& camera)

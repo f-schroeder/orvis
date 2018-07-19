@@ -1,13 +1,12 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "Createable.hpp"
 
 /** @brief The bounding box contains a min position and a max position.
  * @details min and max are glm::vec3 types, but are still aligned to 16-byte boundaries to
  * accomplish easy GPU-buffer support. Can be put into a buffer without modifications.
  */
-struct Bounds : Createable<Bounds>
+struct Bounds
 {
     /** @brief Sets min to std::numeric_limits<float>::max() and max to
      * std::numeric_limits<float>::min(), such that any operation on this bounds will resize it to a

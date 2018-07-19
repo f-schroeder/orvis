@@ -7,7 +7,6 @@
 #include <variant>
 #include <vector>
 #include "Binding.hpp"
-#include "Createable.hpp"
 
 using namespace gl;
 
@@ -54,7 +53,7 @@ private:
 /** @brief A shader object handles compilation of OpenGL shaders and can be attached as a shared_ptr
  * to a Program.
  */
-class Shader : Createable<Shader>
+class Shader
 {
 public:
     /** A shader can use files or raw source strings as source. */
@@ -139,7 +138,7 @@ private:
  * themselves on deletion. This is needed for a global shader program reload support. Operations on
  * this static vector are thread-safe.
  */
-class Program : Createable<Program>
+class Program
 {
 public:
     Program();

@@ -2,6 +2,7 @@
 
 #include "light.glsl"
 #include "material.glsl"
+#include "shadowMapping.glsl"
 
 #ifndef PI
 #define PI 3.14159265359f
@@ -81,7 +82,7 @@ vec4 getPBRColor(in uint materialIndex, in vec3 worldPos, in vec3 normal, in vec
             
         // add to outgoing radiance Lo
         float NdotL = max(dot(normal, L), 0.0f);                
-        Lo += (kD * mat.albedo.xyz / PI + specular) * getLightRadiance(l, worldPos) * NdotL; 
+        Lo += (kD * mat.albedo.xyz / PI + specular) * getLightRadiance(l, worldPos) * NdotL * getShadowPCF(l, worldPos, normal, L); 
     }   
   
     vec3 ambient = getAmbientLight() * mat.albedo.xyz * mat.ao;

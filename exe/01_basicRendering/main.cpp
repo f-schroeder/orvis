@@ -26,27 +26,18 @@ int main()
     shaderProg.attachNew(GL_VERTEX_SHADER, ShaderFile::load("vertex/multiDraw.vert"));
     shaderProg.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/basicRendering.frag"));
 
-    Scene scene("sphere.obj");
+    Scene scene("sponza/sponza.obj");
     scene.setCamera(cam);
 
-    auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, glm::vec3(100000.0f));
+    //auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, glm::vec3(100000.0f));
     auto l2 = Light::makeDirectionalLight();
     auto l3 = Light::makeSpotLight({ 0.0f, 100.0f, 0.0f }, { -1,-1,-1 }, glm::vec3(100000.0f));
-    scene.addLight(l1);
-    scene.addLight(l2);
+    //scene.addLight(l1);
+    
     scene.addLight(l3);
+    scene.addLight(l2);
 
     Timer timer;
-
-    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
-    glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while (float deltatime = window.update() > 0.0f)
     {
@@ -61,11 +52,14 @@ int main()
 
         scene.render(shaderProg);
 
-        if (l1->drawGuiWindow() || l2->drawGuiWindow() || l3->drawGuiWindow())
+        if (/*l1->drawGuiWindow() ||*/ l2->drawGuiWindow() || l3->drawGuiWindow())
+        {
             scene.updateLightBuffer();
+            scene.updateShadowMaps();
+        }
 
-        if (scene.getMeshes()[0]->material.drawGuiWindow())
-            scene.updateMaterialBuffer();
+        //if (scene.getMeshes()[0]->material.drawGuiWindow())
+        //    scene.updateMaterialBuffer();
 
         timer.stop();
         timer.drawGuiWindow(window);

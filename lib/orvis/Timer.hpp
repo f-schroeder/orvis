@@ -3,10 +3,9 @@
 #include <vector>
 #include <glbinding/gl/gl.h>
 #include <GLFW/glfw3.h>
-#include "Createable.hpp"
 using namespace gl;
 
-class Timer : Createable<Timer>
+class Timer
 {
 public:
     Timer();

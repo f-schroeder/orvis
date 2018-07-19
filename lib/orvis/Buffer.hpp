@@ -4,7 +4,6 @@
 #include <glbinding/gl/gl.h>
 #include <vector>
 #include <variant>
-#include "Createable.hpp"
 #include "Binding.hpp"
 
 using namespace gl;
@@ -14,7 +13,7 @@ using namespace gl;
  * @tparam T The type of object stored in the buffer.
  */
 template <typename T>
-class Buffer : Createable<Buffer<T>>
+class Buffer
 {
 public:
     /**
