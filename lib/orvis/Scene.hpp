@@ -30,9 +30,9 @@ public:
 
     /** @brief Performs GPU view frustum culling and afterwards draws the scene indirectly. 
      * @param program The Shader program that is used to render the scene.
-     * @param overwiteCameraBuffer If true, overwites the camera buffer with data from the attached camera-object before rendering
+     * @param overwriteCameraBuffer If true, overwites the camera buffer with data from the attached camera-object before rendering
      */
-    void render(const Program& program, bool overwiteCameraBuffer = true) const;
+    void render(const Program& program, bool overwriteCameraBuffer = true) const;
 
     /** @brief Calculates the bounding box around all transformed meshes.
     * Only has to be called if the bounds or the model-matrix of any mesh is changed.
@@ -66,11 +66,16 @@ public:
     std::shared_ptr<Camera> getCamera() const;
 
     /** @return The list of all attached meshes. */
-    const std::vector<std::shared_ptr<Mesh>>& getMeshes() const;
+    const std::deque<std::shared_ptr<Mesh>>& getMeshes() const;
+
+    /** @brief Reorders the meshes according to their transparencies (transparent objects are rendered last). 
+     * Should be called if any opacity issues occur.
+     */
+    void reorderMeshes();
 
 private:
     std::vector<std::shared_ptr<Light>> m_lights;
-    std::vector<std::shared_ptr<Mesh>> m_meshes;
+    std::deque<std::shared_ptr<Mesh>> m_meshes;
     std::shared_ptr<Camera> m_camera;
 
     Buffer<glm::mat4> m_modelMatBuffer;

@@ -87,20 +87,6 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
     { // running in parallel --> no model-matrices available in this scope!
         updateMultiDrawBuffers();
 
-        m_multiDrawVao.format(VertexAttributeBinding::vertices, 4, GL_FLOAT, false, 0);
-        m_multiDrawVao.setVertexBuffer(m_multiDrawVertexBuffer, VertexAttributeBinding::vertices, 0, sizeof(glm::vec4));
-        m_multiDrawVao.binding(VertexAttributeBinding::vertices);
-
-        m_multiDrawVao.format(VertexAttributeBinding::normals, 4, GL_FLOAT, true, 0);
-        m_multiDrawVao.setVertexBuffer(m_multiDrawNormalBuffer, VertexAttributeBinding::normals, 0, sizeof(glm::vec4));
-        m_multiDrawVao.binding(VertexAttributeBinding::normals);
-
-        m_multiDrawVao.format(VertexAttributeBinding::texCoords, 2, GL_FLOAT, false, 0);
-        m_multiDrawVao.setVertexBuffer(m_multiDrawUVBuffer, VertexAttributeBinding::texCoords, 0, sizeof(glm::vec2));
-        m_multiDrawVao.binding(VertexAttributeBinding::texCoords);
-
-        m_multiDrawVao.setElementBuffer(m_multiDrawIndexBuffer);
-
         updateMaterialBuffer();
 
         m_cullingProgram.attachNew(GL_COMPUTE_SHADER, ShaderFile::load("compute/viewFrustumCulling.comp"));
@@ -118,7 +104,7 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
     importer.FreeScene();
 }
 
-void Scene::render(const Program& program, bool overwiteCameraBuffer) const
+void Scene::render(const Program& program, bool overwriteCameraBuffer) const
 {
     // BINDINGS
     m_indirectDrawBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::indirectDraw);
@@ -126,7 +112,7 @@ void Scene::render(const Program& program, bool overwiteCameraBuffer) const
     m_modelMatBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::modelMatrices);
     m_materialBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::materials);
     m_lightBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::lights);
-    if (overwiteCameraBuffer)
+    if (overwriteCameraBuffer)
         m_camera->uploadToGpu();
 
     // CULLING
@@ -269,9 +255,29 @@ std::shared_ptr<Camera> Scene::getCamera() const
     return m_camera;
 }
 
-const std::vector<std::shared_ptr<Mesh>>& Scene::getMeshes() const
+const std::deque<std::shared_ptr<Mesh>>& Scene::getMeshes() const
 {
     return m_meshes;
+}
+
+void Scene::reorderMeshes()
+{
+    std::deque<std::shared_ptr<Mesh>> orderedMeshes;
+
+    for (const auto& mesh : m_meshes)
+    {
+        if (mesh->isTransparent())
+            orderedMeshes.push_back(mesh);
+        else
+            orderedMeshes.push_front(mesh);
+    }
+
+    m_meshes = orderedMeshes;
+
+    updateModelMatrices();
+    updateMultiDrawBuffers();
+    updateBoundingBoxBuffer();
+    updateMaterialBuffer();
 }
 
 void Scene::updateMultiDrawBuffers()
@@ -310,4 +316,18 @@ void Scene::updateMultiDrawBuffers()
     m_multiDrawUVBuffer.assign(allUVs);
     m_indirectDrawBuffer.resize(indirectDrawParams.size(), GL_DYNAMIC_STORAGE_BIT);
     m_indirectDrawBuffer.assign(indirectDrawParams);
+
+    m_multiDrawVao.format(VertexAttributeBinding::vertices, 4, GL_FLOAT, false, 0);
+    m_multiDrawVao.setVertexBuffer(m_multiDrawVertexBuffer, VertexAttributeBinding::vertices, 0, sizeof(glm::vec4));
+    m_multiDrawVao.binding(VertexAttributeBinding::vertices);
+
+    m_multiDrawVao.format(VertexAttributeBinding::normals, 4, GL_FLOAT, true, 0);
+    m_multiDrawVao.setVertexBuffer(m_multiDrawNormalBuffer, VertexAttributeBinding::normals, 0, sizeof(glm::vec4));
+    m_multiDrawVao.binding(VertexAttributeBinding::normals);
+
+    m_multiDrawVao.format(VertexAttributeBinding::texCoords, 2, GL_FLOAT, false, 0);
+    m_multiDrawVao.setVertexBuffer(m_multiDrawUVBuffer, VertexAttributeBinding::texCoords, 0, sizeof(glm::vec2));
+    m_multiDrawVao.binding(VertexAttributeBinding::texCoords);
+
+    m_multiDrawVao.setElementBuffer(m_multiDrawIndexBuffer);
 }

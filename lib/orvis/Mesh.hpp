@@ -29,6 +29,9 @@ public:
      */
     Bounds& calculateBoundingBox();
 
+    /** @return True if the mesh has a (partially) transparent material */
+    bool isTransparent() const;
+
 private:
     explicit Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::filesystem::path& rootPath);
 
@@ -36,4 +39,6 @@ private:
 
     void copyToAlpha(const std::experimental::filesystem::path& src, const std::shared_ptr<Texture>& dst) const;
     std::shared_ptr<Texture> generateNormalFromHeight(const std::experimental::filesystem::path& src) const;
+
+    bool m_transparent = false;
 };

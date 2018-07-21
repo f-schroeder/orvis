@@ -27,6 +27,7 @@ int main()
     shaderProg.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/basicRendering.frag"));
 
     Scene scene("sponza/sponza.obj");
+    scene.reorderMeshes();
     scene.setCamera(cam);
 
     //auto l1 = Light::makePointLight({ 0.0f, 100.0f, 0.0f }, glm::vec3(100000.0f));

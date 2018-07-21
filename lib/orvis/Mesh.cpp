@@ -72,6 +72,7 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
             {
                 m_textures[aiTextureType_DIFFUSE] = std::make_shared<Texture>(absTexPath, 4);
                 material.setColor(m_textures[aiTextureType_DIFFUSE]);
+                m_transparent = m_textures[aiTextureType_DIFFUSE]->data<float>(GL_RGBA)[3] < 0.9f;
                 break;
             }
             case aiTextureType_OPACITY: //albedo alpha
@@ -80,6 +81,7 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
                 {
                     copyToAlpha(absTexPath, m_textures[aiTextureType_DIFFUSE]);
                     material.setColor(m_textures[aiTextureType_DIFFUSE]);
+                    m_transparent = true;
                 }
                 break;
             }
@@ -139,7 +141,7 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
                     float op;
                     assimpMat->Get(AI_MATKEY_OPACITY, op);
                     material.setColor(glm::vec4(glm::vec3(material.getColor()), op));
-
+                    m_transparent = op < 0.9f;
                 }
                 break;
             }
@@ -258,4 +260,9 @@ Bounds& Mesh::calculateBoundingBox()
 
     bounds = std::reduce(std::execution::par_unseq, vertices.begin(), vertices.end(), Bounds(), Reduction());
     return bounds;
+}
+
+bool Mesh::isTransparent() const
+{
+    return m_transparent;
 }
