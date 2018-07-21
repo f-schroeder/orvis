@@ -88,7 +88,7 @@ void Camera::update(GLFWwindow* window)
 
 void Camera::uploadToGpu()
 {
-    size_t hash = std::hash<glm::vec3>{}(position) + std::hash<glm::quat>{}(rotation) + std::hash<float>{}(gamma) + std::hash<float>{}(exposure);
+    const size_t hash = std::hash<glm::vec3>{}(position) + std::hash<glm::quat>{}(rotation) + std::hash<float>{}(gamma) + std::hash<float>{}(exposure);
 
     if (m_camHash != hash)
     {
@@ -107,6 +107,7 @@ void Camera::uploadToGpu(const glm::mat4& view, const glm::mat4& proj)
     const glm::mat4 invVP = glm::inverse(proj * glm::mat4(glm::mat3(view)));
     m_cameraBuffer.assign({ glm::vec3(view[3]), gamma, glm::vec3(glm::inverse(view)[2]), exposure, view, proj, invVP });
     m_cameraBuffer.bind(GL_UNIFORM_BUFFER, BufferBinding::cameraParameters);
+    m_camHash = 0;
 }
 
 void Camera::reset()

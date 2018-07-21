@@ -93,7 +93,7 @@ private:
     {
         ShadowMap();
 
-        void render(const Scene& scene) const;
+        void render(const Scene& scene, const glm::mat4& lightSpaceMatrix) const;
 
         //Texture shadowTexture{ GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F,  };
         FrameBuffer shadowFBO{ glm::ivec2(1024, 1024) };

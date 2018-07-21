@@ -25,7 +25,7 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
         aiProcess_RemoveComponent | aiComponent_ANIMATIONS | aiComponent_BONEWEIGHTS |
         aiComponent_CAMERAS | aiComponent_LIGHTS | aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_COLORS |
         aiProcess_SplitLargeMeshes | aiProcess_ImproveCacheLocality | aiProcess_RemoveRedundantMaterials |
-        aiProcess_OptimizeMeshes | aiProcess_FlipWindingOrder);
+        aiProcess_OptimizeMeshes | aiProcess_FlipWindingOrder | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_FindInvalidData);
 
     if (!assimpScene || assimpScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
     {
@@ -118,7 +118,7 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
     importer.FreeScene();
 }
 
-void Scene::render(const Program& program) const
+void Scene::render(const Program& program, bool overwiteCameraBuffer) const
 {
     // BINDINGS
     m_indirectDrawBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::indirectDraw);
@@ -126,12 +126,13 @@ void Scene::render(const Program& program) const
     m_modelMatBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::modelMatrices);
     m_materialBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::materials);
     m_lightBuffer.bind(GL_SHADER_STORAGE_BUFFER, BufferBinding::lights);
-    m_camera->uploadToGpu();
+    if (overwiteCameraBuffer)
+        m_camera->uploadToGpu();
 
     // CULLING
-    /*m_cullingProgram.use();
+    m_cullingProgram.use();
     glDispatchCompute(static_cast<GLuint>(glm::ceil(m_indirectDrawBuffer.size() / 64.0f)), 1, 1);
-    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);*/
+    glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
     // DRAW
     program.use();
@@ -261,6 +262,11 @@ void Scene::setCamera(const std::shared_ptr<Camera>& camera)
 {
     m_camera = camera;
     m_camera->setSpeed(0.1f * glm::length(bounds[1] - bounds[0]));
+}
+
+std::shared_ptr<Camera> Scene::getCamera() const
+{
+    return m_camera;
 }
 
 const std::vector<std::shared_ptr<Mesh>>& Scene::getMeshes() const

@@ -28,8 +28,11 @@ public:
     /** @brief The bounding box around all _transformed_ meshes. */
     Bounds bounds;
 
-    /** @brief Performs GPU view frustum culling and afterwards draws the scene indirectly */
-    void render(const Program& program) const;
+    /** @brief Performs GPU view frustum culling and afterwards draws the scene indirectly. 
+     * @param program The Shader program that is used to render the scene.
+     * @param overwiteCameraBuffer If true, overwites the camera buffer with data from the attached camera-object before rendering
+     */
+    void render(const Program& program, bool overwiteCameraBuffer = true) const;
 
     /** @brief Calculates the bounding box around all transformed meshes.
     * Only has to be called if the bounds or the model-matrix of any mesh is changed.
@@ -60,6 +63,7 @@ public:
 
     /** @brief Sets the camera and adjusts its speed to match the scene dimansions. */
     void setCamera(const std::shared_ptr<Camera>& camera);
+    std::shared_ptr<Camera> getCamera() const;
 
     /** @return The list of all attached meshes. */
     const std::vector<std::shared_ptr<Mesh>>& getMeshes() const;

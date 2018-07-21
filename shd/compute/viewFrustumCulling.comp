@@ -16,7 +16,7 @@ layout(std430, binding = INDIRECT_DRAW_BINDING) buffer indirectDrawBuffer
     Indirect indirect[];
 };
 
-layout(std430, binding = INDIRECT_DRAW_BINDING) readonly buffer modelMatrixBuffer
+layout(std430, binding = MODELMATRICES_BINDING) readonly buffer modelMatrixBuffer
 {
     mat4 modelMatrices[];
 };

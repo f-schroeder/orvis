@@ -154,5 +154,5 @@ private:
 
     Buffer<GpuCamera> m_cameraBuffer;
 
-    size_t m_camHash;
+    size_t m_camHash = 0;
 };

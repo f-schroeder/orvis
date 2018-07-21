@@ -45,7 +45,7 @@ std::shared_ptr<Light> Light::makeSpotLight(glm::vec3 position, glm::vec3 direct
 
 void Light::updateShadowMap(const Scene& scene) const
 {
-    m_shadowMap->render(scene);
+    m_shadowMap->render(scene, m_lightSpaceMatrix);
 }
 
 void Light::recalculateLightSpaceMatrix(const Scene& scene)
@@ -106,7 +106,7 @@ Light::ShadowMap::ShadowMap()
     shadowProgram.attachNew(GL_FRAGMENT_SHADER, ShaderFile::load("fragment/shadowMap.frag"));
 }
 
-void Light::ShadowMap::render(const Scene& scene) const
+void Light::ShadowMap::render(const Scene& scene, const glm::mat4& lightSpaceMatrix) const
 {
     // store old viewport
     GLint viewport[4];
@@ -120,8 +120,9 @@ void Light::ShadowMap::render(const Scene& scene) const
     glCullFace(GL_FRONT);
 
     // render SM
-    //shadowProgram.use();    
-    scene.render(shadowProgram);
+    //shadowProgram.use();
+    scene.getCamera()->uploadToGpu(glm::mat4(1.0f), lightSpaceMatrix);
+    scene.render(shadowProgram, false);
 
     shadowFBO.getDepthTexture()->generateMipmaps();
 
