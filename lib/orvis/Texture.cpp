@@ -545,7 +545,7 @@ void Texture::bind(std::variant<GLuint, TextureBinding> binding) const
 void Texture::bindImage(std::variant<GLuint, TextureBinding> binding) const { bindImage(binding, GL_READ_WRITE, m_format); }
 void Texture::bindImage(std::variant<GLuint, TextureBinding> binding, GLenum access, GLenum format) const
 {
-    bindImage(binding, 0, false, 0, access, format);
+    bindImage(binding, 0, true, 0, access, format);
 }
 void Texture::bindImage(std::variant<GLuint, TextureBinding> binding, int level, bool layered, int layer, GLenum access,
     GLenum format) const

@@ -50,6 +50,9 @@ void FrameBuffer::updateDrawBuffers()
         m_colorAttachments.begin(), m_colorAttachments.end(), [&attachments](auto& entry) {
         attachments.push_back(GL_COLOR_ATTACHMENT0 + entry.first);
     });
+
+    std::sort(attachments.begin(), attachments.end());
+    
     glNamedFramebufferDrawBuffers(
         m_fbo, static_cast<GLsizei>(attachments.size()), attachments.data());
 }
@@ -86,9 +89,12 @@ void FrameBuffer::resize(glm::ivec2 size)
 
     glCreateFramebuffers(1, &m_fbo);
 
-    m_depthTexture->resize(m_depthTexture->getTarget(), m_depthTexture->getFormat(), size);
-    glNamedFramebufferTexture(
-        m_fbo, GL_DEPTH_ATTACHMENT, m_depthTexture->id(), 0);
+    if(m_depthTexture)
+    {
+        m_depthTexture->resize(m_depthTexture->getTarget(), m_depthTexture->getFormat(), size);
+        glNamedFramebufferTexture(
+            m_fbo, GL_DEPTH_ATTACHMENT, m_depthTexture->id(), 0);
+    }
 
     std::for_each(m_colorAttachments.begin(), m_colorAttachments.end(), [&](auto& attachment) {
         attachment.second->resize(
