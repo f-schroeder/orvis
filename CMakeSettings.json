@@ -13,7 +13,7 @@
                                "variables":  [
                                                  {
                                                      "name":  "CMAKE_TOOLCHAIN_FILE",
-                                                     "value":  "D:\\Programs\\Microsoft Visual Studio\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+                                                     "value":  ""
                                                  },
                                                  {
                                                      "name":  "VCPKG_TARGET_TRIPLET",
@@ -34,7 +34,7 @@
                                "variables":  [
                                                  {
                                                      "name":  "CMAKE_TOOLCHAIN_FILE",
-                                                     "value":  "D:\\Programs\\Microsoft Visual Studio\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+                                                     "value":  ""
                                                  },
                                                  {
                                                      "name":  "VCPKG_TARGET_TRIPLET",
@@ -55,7 +55,7 @@
                                "variables":  [
                                                  {
                                                      "name":  "CMAKE_TOOLCHAIN_FILE",
-                                                     "value":  "D:\\Programs\\Microsoft Visual Studio\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+                                                     "value":  ""
                                                  },
                                                  {
                                                      "name":  "VCPKG_TARGET_TRIPLET",
