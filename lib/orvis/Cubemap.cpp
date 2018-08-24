@@ -7,13 +7,13 @@ Cubemap::Cubemap() : m_skyboxShader(std::make_shared<Shader>(GL_FRAGMENT_SHADER,
 {
 }
 
-void Cubemap::generateCubemap(const std::experimental::filesystem::path& path, const std::string& extension,
+void Cubemap::generateCubemap(const std::filesystem::path& path, const std::string& extension,
     const std::array<std::string, 6>& faces)
 {
     generateCubemap(path, extension, faces[0], faces[1], faces[2], faces[3], faces[4], faces[5]);
 }
 
-void Cubemap::generateCubemap(const std::experimental::filesystem::path& cubeMapSourcePath,
+void Cubemap::generateCubemap(const std::filesystem::path& cubeMapSourcePath,
     const std::string& extension, const std::string& posX,
     const std::string& negX, const std::string& posY,
     const std::string& negY, const std::string& posZ,

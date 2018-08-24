@@ -32,11 +32,14 @@ namespace util
         return std::string(reinterpret_cast<const char*>(content));
     }
 
+#pragma warning( push )
+#pragma warning( disable : 4146) // intended use of negation operation on unsigned variable
     void setBit(GLuint& bitset, unsigned int index, bool value)
     {
         const GLuint newbit = !!value; // booleanize to force 0 or 1
         bitset ^= (-newbit ^ bitset) & (1U << index);
     }
+#pragma warning( pop ) 
 
     bool getBit(GLuint bitset, unsigned int index)
     {

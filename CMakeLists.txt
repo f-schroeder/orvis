@@ -56,6 +56,14 @@ foreach(subdir ${children})
 											CXX_STANDARD 17
 											CXX_STANDARD_REQUIRED ON)
             target_include_directories(${subdir} PUBLIC ${ORV_INCLUDE_DIRECTORIES})
+
+			if(MSVC)
+				target_compile_definitions(${subdir} PUBLIC _ENABLE_EXTENDED_ALIGNED_STORAGE)
+			endif()
+			if(NOT MSVC)
+				target_compile_options(${subdir} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-conversion-null>)
+			endif()
+
         endif()
     endif()
 endforeach()
@@ -88,6 +96,14 @@ foreach(subdir ${children})
 											CXX_STANDARD 17
 											CXX_STANDARD_REQUIRED ON)
             target_include_directories(${subdir} PUBLIC ${ORV_INCLUDE_DIRECTORIES})
+
+			if(MSVC)
+				target_compile_definitions(${subdir} PUBLIC _ENABLE_EXTENDED_ALIGNED_STORAGE)
+			endif()
+			if(NOT MSVC)
+				target_compile_options(${subdir} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-conversion-null>)
+			endif()
+
         endif()
     endif()
 endforeach()
@@ -110,5 +126,13 @@ foreach(subdir ${children})
 										CXX_STANDARD 17
 										CXX_STANDARD_REQUIRED ON)
         target_include_directories(${subdir} PUBLIC ${ORV_INCLUDE_DIRECTORIES})
+
+		if(MSVC)
+			target_compile_definitions(${subdir} PUBLIC _ENABLE_EXTENDED_ALIGNED_STORAGE)
+		endif()
+		if(NOT MSVC)
+			target_compile_options(${subdir} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-conversion-null>)
+		endif()
+
     endif()
 endforeach()

@@ -23,7 +23,7 @@ struct IndirectDrawCommand
 class Scene
 {
 public:
-    Scene(const std::experimental::filesystem::path& filename);
+    Scene(const std::filesystem::path& filename);
 
     /** @brief The bounding box around all _transformed_ meshes. */
     Bounds bounds;

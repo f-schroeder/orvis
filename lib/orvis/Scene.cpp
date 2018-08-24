@@ -11,7 +11,7 @@
 #include "Util.hpp"
 #include "stb/stb_image.h"
 
-Scene::Scene(const std::experimental::filesystem::path& filename)
+Scene::Scene(const std::filesystem::path& filename)
 {
     const auto path = util::resourcesPath / filename;
     const auto pathString = path.string();

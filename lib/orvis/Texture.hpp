@@ -93,7 +93,7 @@ public:
     * @param levels The number of mipmap levels for this texture. If set to -1, it will be set to
     * the maximum amount for the given size.
     */
-    Texture(const std::experimental::filesystem::path& filename, unsigned int channels, int levels = -1);
+    Texture(const std::filesystem::path& filename, unsigned int channels, int levels = -1);
 
     /**
      * @brief Creates a 3D texture.

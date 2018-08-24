@@ -30,7 +30,7 @@ public:
      * util::shadersPath.
      * @return The loaded file or nullptr if it has not been found.
      */
-    static std::shared_ptr<ShaderFile> load(const std::experimental::filesystem::path& path);
+    static std::shared_ptr<ShaderFile> load(const std::filesystem::path& path);
 
     /** @brief Reloads this file if the time stamp (last write time) has changed. */
     void reload();
@@ -39,15 +39,15 @@ public:
     const std::string& contents() const;
 
 private:
-    explicit ShaderFile(std::experimental::filesystem::path path);
+    explicit ShaderFile(std::filesystem::path path);
     struct FileContent
     {
         std::shared_ptr<ShaderFile> baseHandle;
     };
     static std::unordered_map<std::string, FileContent> m_contents;
-    std::experimental::filesystem::path                 m_path;
+    std::filesystem::path                 m_path;
     std::string                                         m_source;
-    std::experimental::filesystem::file_time_type       m_timestamp;
+    std::filesystem::file_time_type       m_timestamp;
 };
 
 /** @brief A shader object handles compilation of OpenGL shaders and can be attached as a shared_ptr

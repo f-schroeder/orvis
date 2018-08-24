@@ -33,12 +33,12 @@ public:
     bool isTransparent() const;
 
 private:
-    explicit Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::filesystem::path& rootPath);
+    explicit Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::filesystem::path& rootPath);
 
     std::unordered_map<aiTextureType, std::shared_ptr<Texture>> m_textures;
 
-    void copyToAlpha(const std::experimental::filesystem::path& src, const std::shared_ptr<Texture>& dst) const;
-    std::shared_ptr<Texture> generateNormalFromHeight(const std::experimental::filesystem::path& src) const;
+    void copyToAlpha(const std::filesystem::path& src, const std::shared_ptr<Texture>& dst) const;
+    std::shared_ptr<Texture> generateNormalFromHeight(const std::filesystem::path& src) const;
 
     bool m_transparent = false;
 };

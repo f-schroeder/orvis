@@ -4,7 +4,7 @@
 #include "Util.hpp"
 #include "stb/stb_image.h"
 
-Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::filesystem::path& rootPath)
+Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::filesystem::path& rootPath)
 {
     if (!assimpMesh->HasNormals() || !assimpMesh->HasFaces())
     {
@@ -64,7 +64,7 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
         if (assimpMat->GetTextureCount(type) > 0)
         {
             assimpMat->GetTexture(type, 0, &reltexPath);
-            auto absTexPath = std::experimental::filesystem::absolute(rootPath.parent_path() / std::experimental::filesystem::path(reltexPath.C_Str()));
+            auto absTexPath = std::filesystem::absolute(rootPath.parent_path() / std::filesystem::path(reltexPath.C_Str()));
 
             switch (type)
             {
@@ -182,7 +182,7 @@ Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::experimental::f
     calculateBoundingBox();
 }
 
-void Mesh::copyToAlpha(const std::experimental::filesystem::path& src, const std::shared_ptr<Texture>& dst) const
+void Mesh::copyToAlpha(const std::filesystem::path& src, const std::shared_ptr<Texture>& dst) const
 {
     int imageWidth, imageHeight, numChannels;
 
@@ -206,7 +206,7 @@ void Mesh::copyToAlpha(const std::experimental::filesystem::path& src, const std
     dst->generateMipmaps();
 }
 
-std::shared_ptr<Texture> Mesh::generateNormalFromHeight(const std::experimental::filesystem::path& src) const
+std::shared_ptr<Texture> Mesh::generateNormalFromHeight(const std::filesystem::path& src) const
 {
     const glm::vec2 size = glm::vec2(0.5, 0.0); //"strength" of bump-mapping
 

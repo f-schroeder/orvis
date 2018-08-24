@@ -38,7 +38,7 @@ public:
      * @details In this function the strings get concatinated to load a face of the cubemap.
      * Example "/textures/indoor/posx.hdr
      */
-    void generateCubemap(const std::experimental::filesystem::path& cubeMapSourcePath,
+    void generateCubemap(const std::filesystem::path& cubeMapSourcePath,
         const std::string& extension = ".hdr", const std::string& posX = "posx",
         const std::string& negX = "negx", const std::string& posY = "posy",
         const std::string& negY = "negy", const std::string& posZ = "posz",
@@ -54,7 +54,7 @@ public:
      * @details In this function the strings get concatinated to load a face of the cubemap.
      * Example "/textures/indoor/posx.hdr
      */
-    void generateCubemap(const std::experimental::filesystem::path& path, const std::string& extension,
+    void generateCubemap(const std::filesystem::path& path, const std::string& extension,
         const std::array<std::string, 6>& faces);
 
     /** @brief Renders the cubemap into a cube.

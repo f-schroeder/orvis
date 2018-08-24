@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <thread>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <glbinding/gl/gl.h>
 using namespace gl;
 #include <GLFW/glfw3.h>
@@ -96,8 +96,8 @@ namespace util
         return Overload<decltype(fs)...>{std::move(fs)...};
     };
 
-    static const std::experimental::filesystem::path shadersPath = std::experimental::filesystem::current_path().parent_path().parent_path().append("shd");
-    static const std::experimental::filesystem::path resourcesPath = std::experimental::filesystem::current_path().parent_path().parent_path().append("res");
+    static const std::filesystem::path shadersPath = std::filesystem::current_path().parent_path().parent_path().append("shd");
+    static const std::filesystem::path resourcesPath = std::filesystem::current_path().parent_path().parent_path().append("res");
 
 #ifdef _DEBUG
     static constexpr bool debugmode = true;

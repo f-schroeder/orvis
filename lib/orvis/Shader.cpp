@@ -6,14 +6,14 @@
 #include <utility>
 #include "Util.hpp"
 
-std::shared_ptr<ShaderFile> ShaderFile::load(const std::experimental::filesystem::path& path)
+std::shared_ptr<ShaderFile> ShaderFile::load(const std::filesystem::path& path)
 {
     const auto absolute_path = util::shadersPath / path.string();
 
-    std::experimental::filesystem::path realPath;
-    if(std::experimental::filesystem::exists(path))
+    std::filesystem::path realPath;
+    if(std::filesystem::exists(path))
         realPath = path;
-    else if(std::experimental::filesystem::exists(absolute_path))
+    else if(std::filesystem::exists(absolute_path))
         realPath = absolute_path;
     else
     {
@@ -35,7 +35,7 @@ std::shared_ptr<ShaderFile> ShaderFile::load(const std::experimental::filesystem
     }
 }
 
-ShaderFile::ShaderFile(std::experimental::filesystem::path path)
+ShaderFile::ShaderFile(std::filesystem::path path)
         : m_path(std::move(path))
 {
     reload();
@@ -46,16 +46,16 @@ void                                                     ShaderFile::reload()
 {
     static std::mutex            mtx;
     std::unique_lock<std::mutex> lock(mtx);
-    if(std::experimental::filesystem::last_write_time(m_path) != m_timestamp)
+    if(std::filesystem::last_write_time(m_path) != m_timestamp)
     {
-        if(!std::experimental::filesystem::exists(m_path))
+        if(!std::filesystem::exists(m_path))
         {
             throw std::invalid_argument("File not found: " + m_path.string());
         }
         std::cout << "Reloading file: " << m_path << "\n";
 
         std::ifstream in(m_path.string());
-        m_timestamp = std::experimental::filesystem::last_write_time(m_path);
+        m_timestamp = std::filesystem::last_write_time(m_path);
         m_source =
                 std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
     }

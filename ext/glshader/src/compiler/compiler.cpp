@@ -204,7 +204,7 @@ namespace glshader::process
                     if (!files::exists(dep_file))
                         continue;
 
-                    if (std::chrono::system_clock::to_time_t(files::last_write_time(dep_file)) != last_write)
+                    //if (std::chrono::system_clock::to_time_t(files::last_write_time(dep_file)) != last_write)
                     {
                         reload = true;
                         break;
@@ -257,7 +257,7 @@ namespace glshader::process
             std::stringstream buf;
             for (auto dep : dependencies)
             {
-                std::time_t t = std::chrono::system_clock::to_time_t(last_write_time(dep));
+                std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()/*last_write_time(dep)*/);
                 auto str = dep.string();
                 uint32_t len = static_cast<uint32_t>(str.length());
                 buf.write(reinterpret_cast<const char*>(&t), sizeof(t));

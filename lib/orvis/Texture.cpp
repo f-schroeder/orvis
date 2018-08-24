@@ -122,7 +122,7 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, int levels)
     generateHandle();
 }
 
-Texture::Texture(const std::experimental::filesystem::path& filename, unsigned int channels, int levels)
+Texture::Texture(const std::filesystem::path& filename, unsigned int channels, int levels)
     :Texture(GL_TEXTURE_2D)
 {
     const bool isHdr = stbi_is_hdr(filename.string().c_str());
