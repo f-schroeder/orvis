@@ -20,12 +20,13 @@ Scene::Scene(const std::experimental::filesystem::path& filename)
 
     std::cout << "Loading model from " << filename.string() << std::endl;
 
+	// aiComponent_TANGENTS_AND_BITANGENTS flips the winding order (assimp-internal bug)
     const aiScene * assimpScene = importer.ReadFile(pathString.c_str(), aiProcess_GenSmoothNormals |
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_JoinIdenticalVertices |
         aiProcess_RemoveComponent | aiComponent_ANIMATIONS | aiComponent_BONEWEIGHTS |
-        aiComponent_CAMERAS | aiComponent_LIGHTS | aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_COLORS |
+        aiComponent_CAMERAS | aiComponent_LIGHTS /*| aiComponent_TANGENTS_AND_BITANGENTS*/ | aiComponent_COLORS |
         aiProcess_SplitLargeMeshes | aiProcess_ImproveCacheLocality | aiProcess_RemoveRedundantMaterials |
-        aiProcess_OptimizeMeshes | aiProcess_FlipWindingOrder | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_FindInvalidData);
+        aiProcess_OptimizeMeshes | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_FindInvalidData);
 
     if (!assimpScene || assimpScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
     {
