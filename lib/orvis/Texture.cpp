@@ -39,9 +39,9 @@ Sampler::Sampler(const Sampler& other) : m_samplerId(glCreateSampler())
 
 Sampler::Sampler(Sampler&& other) noexcept
 {
-    m_samplerId = other.m_samplerId;
+    m_samplerId = std::move(other.m_samplerId);
     m_samplerParams = std::move(other.m_samplerParams);
-    other.m_samplerId->id = 0;
+    //other.m_samplerId->id = 0;
 }
 
 Sampler& Sampler::operator=(const Sampler& other)
@@ -50,6 +50,7 @@ Sampler& Sampler::operator=(const Sampler& other)
  //       glDeleteSamplers(1, &m_samplerId);
  //   glGenSamplers(1, &m_samplerId);
 
+	m_samplerId.reset();
 	m_samplerId = glCreateSampler();
 
     for (const auto& var : other.m_samplerParams)
@@ -66,11 +67,11 @@ Sampler& Sampler::operator=(const Sampler& other)
 
 Sampler& Sampler::operator=(Sampler&& other) noexcept
 {
-	if (*m_samplerId)
+	//if (*m_samplerId)
 		m_samplerId.reset(); // glDeleteSamplers(1, &(*m_samplerId));
-    m_samplerId = other.m_samplerId;
+    m_samplerId = std::move(other.m_samplerId);
     m_samplerParams = std::move(other.m_samplerParams);
-    other.m_samplerId->id = 0;
+    //other.m_samplerId->id = 0;
     return *this;
 }
 
@@ -325,7 +326,7 @@ Texture::Texture(Texture&& other) noexcept
 {
     m_size = other.m_size;
     m_target = other.m_target;
-    m_textureId = other.m_textureId;
+    m_textureId = std::move(other.m_textureId);
     m_format = other.m_format;
     m_defaultSampler = std::move(other.m_defaultSampler);
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -335,16 +336,16 @@ Texture::Texture(Texture&& other) noexcept
     m_hasMipmaps = other.m_hasMipmaps;
     m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
-    other.m_textureId->id = 0;
+    //other.m_textureId->id = 0;
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept
 {
-	if (glIsTexture(*m_textureId))
+	//if (glIsTexture(*m_textureId))
 		m_textureId.reset(); // glDeleteTextures(1, &(*m_textureId));
     m_size = other.m_size;
     m_target = other.m_target;
-    m_textureId = other.m_textureId;
+    m_textureId = std::move(other.m_textureId);
     m_format = other.m_format;
     m_defaultSampler = std::move(other.m_defaultSampler);
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -354,18 +355,19 @@ Texture& Texture::operator=(Texture&& other) noexcept
     m_hasMipmaps = other.m_hasMipmaps;
     m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
-    other.m_textureId->id = 0;
+    //other.m_textureId->id = 0;
     return *this;
 }
 
 Texture& Texture::operator=(const Texture& other)
 {
-	m_textureId = glCreateTexture(m_target);
     //if (glIsTexture(m_textureId))
     //    glDeleteTextures(1, &m_textureId);
+	m_textureId.reset();
     m_size = other.m_size;
     m_target = other.m_target;
     //glCreateTextures(m_target, 1, &m_textureId);
+	m_textureId = glCreateTexture(m_target);
     m_format = other.m_format;
     m_defaultSampler = other.m_defaultSampler;
     m_fixedSampleLocations = other.m_fixedSampleLocations;

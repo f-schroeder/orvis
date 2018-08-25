@@ -64,10 +64,10 @@ VertexArray::VertexArray(const VertexArray& other)
 
 VertexArray::VertexArray(VertexArray&& other) noexcept
 {
-    m_id         = other.m_id;
+    m_id         = std::move(other.m_id);
     m_attributes = std::move(other.m_attributes);
     m_bindings   = std::move(other.m_bindings);
-    other.m_id->id   = 0;
+    //other.m_id->id   = 0;
 }
 
 VertexArray& VertexArray::operator=(const VertexArray& other)
@@ -77,6 +77,7 @@ VertexArray& VertexArray::operator=(const VertexArray& other)
 
     //glCreateVertexArrays(1, &m_id);
 
+	m_id.reset();
 	m_id = glCreateVertexArray();
 
     for(const auto& attr : other.m_attributes)
@@ -99,13 +100,13 @@ VertexArray& VertexArray::operator=(const VertexArray& other)
 
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
 {
-	if (glIsVertexArray(*m_id))
+	//if (glIsVertexArray(*m_id))
 		m_id.reset(); // glDeleteVertexArrays(1, &(*m_id));
-    m_id                 = other.m_id;
+    m_id                 = std::move(other.m_id);
     m_attributes         = std::move(other.m_attributes);
     m_bindings           = std::move(other.m_bindings);
-    m_elementArrayBuffer = other.m_elementArrayBuffer;
-    other.m_id->id           = 0;
+    m_elementArrayBuffer = std::move(other.m_elementArrayBuffer);
+    //other.m_id->id           = 0;
     return *this;
 }
 

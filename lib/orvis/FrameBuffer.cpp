@@ -92,6 +92,7 @@ void FrameBuffer::resize(glm::ivec2 size)
 
     //glCreateFramebuffers(1, &m_fbo);
 
+	m_fbo.reset();
 	m_fbo = glCreateFramebuffer();
 
     if(m_depthTexture)

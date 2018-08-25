@@ -57,16 +57,20 @@ template <typename T>
 Buffer<T>::Buffer(Buffer&& other) noexcept
         : m_storageFlags(other.m_storageFlags)
         , m_size(other.m_size)
-        , m_buffer(other.m_buffer)
+        , m_buffer(std::move(other.m_buffer))
 {
-    other.m_buffer->id = 0;
+    //other.m_buffer->id = 0;
 }
 template <typename T>
 Buffer<T>& Buffer<T>::operator=(const Buffer& other)
 {
-    if(*m_buffer != 0)
-        glDeleteBuffers(1, &(*m_buffer));
-    glCreateBuffers(1, &m_buffer->id);
+    //if(*m_buffer != 0)
+    //    glDeleteBuffers(1, &(*m_buffer));
+    //glCreateBuffers(1, &m_buffer->id);
+
+	m_buffer.reset();
+	m_buffer = glCreateBuffer();
+
     m_size         = other.m_size;
     m_storageFlags = other.m_storageFlags;
     glNamedBufferStorage(
@@ -76,12 +80,12 @@ Buffer<T>& Buffer<T>::operator=(const Buffer& other)
 template <typename T>
 Buffer<T>& Buffer<T>::operator=(Buffer&& other) noexcept
 {
-	if (*m_buffer != 0)
+	//if (*m_buffer != 0)
 		m_buffer.reset(); /*glDeleteBuffers(1, &(*m_buffer));*/
     m_size         = other.m_size;
     m_storageFlags = other.m_storageFlags;
-    m_buffer       = other.m_buffer;
-    other.m_buffer->id = 0;
+    m_buffer       = std::move(other.m_buffer);
+    //other.m_buffer->id = 0;
     return *this;
 }
 
