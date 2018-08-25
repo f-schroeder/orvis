@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 #include "Binding.hpp"
+#include "OpenGL_RAII.hpp"
 
 using namespace gl;
 
@@ -44,10 +45,10 @@ public:
     void set(GLenum texParam, GLenum value);
 
     /** @return The sampler object ID. */
-    GLuint id() const;
+    GLsampler id() const;
 
 private:
-    GLuint                                               m_samplerId = GL_INVALID_INDEX;
+    GLsampler													 m_samplerId;
     std::unordered_map<GLenum, std::variant<int, float, GLenum>> m_samplerParams;
 };
 
@@ -353,7 +354,7 @@ public:
                    GLenum format) const;
 
     /** @return The texture id */
-    GLuint id() const;
+    GLtexture id() const;
 
     /**
      * @brief Clears the whole texture to the given data value.
@@ -436,7 +437,7 @@ private:
     explicit Texture(GLenum target);
     void generateHandle();
 
-    GLuint                   m_textureId     = GL_INVALID_INDEX;
+    GLtexture                m_textureId;
     GLenum                   m_target        = GL_INVALID_ENUM;
     GLenum                   m_format        = GL_INVALID_ENUM;
     GLuint64                 m_textureHandle = 0;

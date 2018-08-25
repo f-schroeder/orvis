@@ -3,6 +3,7 @@
 #include "Texture.hpp"
 #include <array>
 #include <unordered_map>
+#include "Buffer.hpp"
 
 using namespace gl;
 
@@ -82,7 +83,7 @@ public:
     /**
      * @brief Gets the OpenGL-ID of the framebuffer object.
      */
-    GLuint id() const;
+    GLframebuffer id() const;
 
     /**
      * @brief Destructor. Destroys all allocated GPU-resources.
@@ -110,7 +111,7 @@ private:
 
     glm::ivec2 m_size     = glm::ivec2(0, 0);
 
-    GLuint m_fbo = GL_INVALID_INDEX;
+    GLframebuffer m_fbo;
 };
 
 /**

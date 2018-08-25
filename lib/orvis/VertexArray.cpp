@@ -1,11 +1,15 @@
 #include "VertexArray.hpp"
 
-VertexArray::VertexArray() { glCreateVertexArrays(1, &m_id); }
+VertexArray::VertexArray() : m_id(glCreateVertexArray())
+{
+	//glCreateVertexArrays(1, &m_id);
+}
 
 VertexArray::~VertexArray()
 {
-    if(glIsVertexArray(m_id))
-        glDeleteVertexArrays(1, &m_id);
+	// done by RAII
+    //if(glIsVertexArray(m_id))
+    //    glDeleteVertexArrays(1, &m_id);
 }
 
 void VertexArray::format(std::variant<GLuint, VertexAttributeBinding> attribute, GLint components, GLenum type, bool normalized,
@@ -21,9 +25,9 @@ void VertexArray::format(std::variant<GLuint, VertexAttributeBinding> attribute,
     attr->normalized = normalized;
     attr->offset     = offset;
 
-    glEnableVertexArrayAttrib(m_id, att);
+    glEnableVertexArrayAttrib(*m_id, att);
     glVertexArrayAttribFormat(
-            m_id, att, components, type, normalized, static_cast<GLuint>(offset));
+            *m_id, att, components, type, normalized, static_cast<GLuint>(offset));
 }
 
 void VertexArray::binding(std::variant<GLuint, VertexAttributeBinding> attribute, std::variant<GLuint, VertexAttributeBinding> binding)
@@ -31,11 +35,11 @@ void VertexArray::binding(std::variant<GLuint, VertexAttributeBinding> attribute
     const GLuint att = std::holds_alternative<GLuint>(attribute) ? std::get<GLuint>(attribute) : static_cast<GLuint>(std::get<VertexAttributeBinding>(attribute));
     const GLuint bnd = std::holds_alternative<GLuint>(binding) ? std::get<GLuint>(binding) : static_cast<GLuint>(std::get<VertexAttributeBinding>(binding));
     m_bindings[bnd].attributes.emplace_back(std::ref(*m_attributes[att]));
-    glVertexArrayAttribBinding(m_id, att, bnd == GL_INVALID_INDEX ? att : bnd);
+    glVertexArrayAttribBinding(*m_id, att, bnd == GL_INVALID_INDEX ? att : bnd);
 }
 
-GLuint VertexArray::id() const { return m_id; }
-void   VertexArray::bind() const { glBindVertexArray(m_id); }
+GLvertexArray VertexArray::id() const { return m_id; }
+void   VertexArray::bind() const { glBindVertexArray(*m_id); }
 
 VertexArray::VertexArray(const VertexArray& other)
         : VertexArray()
@@ -63,15 +67,18 @@ VertexArray::VertexArray(VertexArray&& other) noexcept
     m_id         = other.m_id;
     m_attributes = std::move(other.m_attributes);
     m_bindings   = std::move(other.m_bindings);
-    other.m_id   = 0;
+    other.m_id->id   = 0;
 }
 
 VertexArray& VertexArray::operator=(const VertexArray& other)
 {
-    if(glIsVertexArray(m_id))
-        glDeleteVertexArrays(1, &m_id);
+    //if(glIsVertexArray(m_id))
+    //    glDeleteVertexArrays(1, &m_id);
 
-    glCreateVertexArrays(1, &m_id);
+    //glCreateVertexArrays(1, &m_id);
+
+	m_id = glCreateVertexArray();
+
     for(const auto& attr : other.m_attributes)
     {
         format(attr.second->attribute,
@@ -92,27 +99,27 @@ VertexArray& VertexArray::operator=(const VertexArray& other)
 
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
 {
-    if(glIsVertexArray(m_id))
-        glDeleteVertexArrays(1, &m_id);
+	if (glIsVertexArray(*m_id))
+		m_id.reset(); // glDeleteVertexArrays(1, &(*m_id));
     m_id                 = other.m_id;
     m_attributes         = std::move(other.m_attributes);
     m_bindings           = std::move(other.m_bindings);
     m_elementArrayBuffer = other.m_elementArrayBuffer;
-    other.m_id           = 0;
+    other.m_id->id           = 0;
     return *this;
 }
 
-void VertexArray::setElementBuffer(const GLuint& buffer)
+void VertexArray::setElementBuffer(const GLbuffer& buffer)
 {
-    glVertexArrayElementBuffer(m_id, buffer);
+    glVertexArrayElementBuffer(*m_id, *buffer);
     m_elementArrayBuffer = buffer;
 }
 
-void VertexArray::setVertexBuffer(const GLuint& buffer, std::variant<GLuint, VertexAttributeBinding> binding, GLintptr offset,
+void VertexArray::setVertexBuffer(const GLbuffer& buffer, std::variant<GLuint, VertexAttributeBinding> binding, GLintptr offset,
                                   GLsizei stride)
 {
     const GLuint bnd = std::holds_alternative<GLuint>(binding) ? std::get<GLuint>(binding) : static_cast<GLuint>(std::get<VertexAttributeBinding>(binding));
-    glVertexArrayVertexBuffer(m_id, bnd, buffer, offset, stride);
+    glVertexArrayVertexBuffer(*m_id, bnd, *buffer, offset, stride);
     auto& buf  = m_bindings[bnd];
     buf.buffer = buffer;
     buf.offset = offset;

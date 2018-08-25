@@ -70,7 +70,7 @@ Shader::Shader(const GLenum type, const ShaderSource& source, const std::vector<
 
 Shader::Shader(GLenum type, const std::vector<ShaderSource>& sources, std::vector<glsp::definition> definitions)
     : m_type(type)
-    , m_handle(glCreateShader(m_type))
+    , m_handle(glCreateShaderRAII(m_type))
     , m_definitions(std::move(definitions))
 {
     for(const auto& source : sources)
@@ -81,8 +81,9 @@ Shader::Shader(GLenum type, const std::vector<ShaderSource>& sources, std::vecto
 
 Shader::~Shader()
 {
-    if(glIsShader(m_handle))
-        glDeleteShader(m_handle);
+	// done by RAII
+    //if(glIsShader(m_handle))
+    //    glDeleteShader(m_handle);
 }
 
 Shader::Shader(const Shader& other)
@@ -96,13 +97,13 @@ Shader::Shader(Shader&& other) noexcept
         , m_handle(other.id())
         , m_sources(std::move(other.m_sources))
 {
-    other.m_handle = 0;
+    other.m_handle->id = 0;
 }
 
 Shader& Shader::operator=(const Shader& other)
 {
-    if(!glIsShader(m_handle))
-        m_handle = glCreateShader(m_type);
+    if(!glIsShader(*m_handle))
+        m_handle = glCreateShaderRAII(m_type);
     m_type    = other.type();
     m_sources = other.m_sources;
     reload();
@@ -111,12 +112,12 @@ Shader& Shader::operator=(const Shader& other)
 
 Shader& Shader::operator=(Shader&& other) noexcept
 {
-    if(glIsShader(m_handle))
-        glDeleteShader(m_handle);
+    if(glIsShader(*m_handle))
+        glDeleteShader(*m_handle);
     m_type         = other.type();
     m_handle       = other.m_handle;
     m_sources      = std::move(other.m_sources);
-    other.m_handle = 0;
+    other.m_handle->id = 0;
     return *this;
 }
 
@@ -130,7 +131,7 @@ bool Shader::reload(bool checkStatus)
         }
         void operator()(std::string& str)
         {
-            std::string processedSource = glsp::preprocess_source(str, "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(parent.id()), { util::shadersPath }, parent.m_definitions).contents;
+            std::string processedSource = glsp::preprocess_source(str, "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(*(parent.id())), { util::shadersPath }, parent.m_definitions).contents;
             const auto cStrSource = new char[processedSource.length()];
             strcpy(cStrSource, processedSource.c_str());
             begin_pointers.emplace_back(cStrSource);
@@ -139,7 +140,7 @@ bool Shader::reload(bool checkStatus)
         void operator()(std::shared_ptr<ShaderFile>& file)
         {
             file->reload();
-            std::string processedSource = glsp::preprocess_source(file->contents(), "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(parent.id()), { util::shadersPath }, parent.m_definitions).contents;
+            std::string processedSource = glsp::preprocess_source(file->contents(), "Type: " + std::to_string(static_cast<int>(parent.type())) + " ID: " + std::to_string(*(parent.id())), { util::shadersPath }, parent.m_definitions).contents;
             const auto cStrSource = new char[processedSource.length()];
             strcpy(cStrSource, processedSource.c_str());
             begin_pointers.emplace_back(cStrSource);
@@ -153,26 +154,26 @@ bool Shader::reload(bool checkStatus)
     for(auto&& source : m_sources)
         std::visit(inflater, source);   
 
-    glShaderSource(m_handle,
+    glShaderSource(*m_handle,
                    static_cast<GLsizei>(inflater.begin_pointers.size()),
                    inflater.begin_pointers.data(),
                    inflater.begin_pointer_lengths.data());
-    glCompileShader(m_handle);
+    glCompileShader(*m_handle);
 
     if(checkStatus)
     {
         GLint result;
-        glGetShaderiv(m_handle, GL_COMPILE_STATUS, &result);
+        glGetShaderiv(*m_handle, GL_COMPILE_STATUS, &result);
         if(GL_FALSE == result)
         {
             GLint logLen;
-            glGetShaderiv(m_handle, GL_INFO_LOG_LENGTH, &logLen);
+            glGetShaderiv(*m_handle, GL_INFO_LOG_LENGTH, &logLen);
             if(logLen > 0)
             {
                 std::string log;
                 log.resize(logLen);
                 GLsizei written;
-                glGetShaderInfoLog(m_handle, logLen, &written, &log[0]);
+                glGetShaderInfoLog(*m_handle, logLen, &written, &log[0]);
                 std::cout << "Shader log: " << log << std::endl;
             }
             return false;
@@ -183,12 +184,12 @@ bool Shader::reload(bool checkStatus)
 
 GLenum Shader::type() const { return m_type; }
 
-GLuint Shader::id() const { return m_handle; }
+GLshader Shader::id() const { return m_handle; }
 
 std::mutex            Program::m_programMutex;
 std::vector<Program*> Program::m_allPrograms;
 Program::Program()
-        : m_handle(glCreateProgram())
+        : m_handle(glCreateProgramRAII())
         , m_linked(false)
 {
     std::unique_lock<std::mutex> lock(m_programMutex);
@@ -196,8 +197,9 @@ Program::Program()
 }
 Program::~Program()
 {
-    if(glIsProgram(m_handle))
-        glDeleteProgram(m_handle);
+	// done by RAII
+    //if(glIsProgram(m_handle))
+    //    glDeleteProgram(m_handle);
 
     std::unique_lock<std::mutex> lock(m_programMutex);
     if(const auto it = std::find(m_allPrograms.begin(), m_allPrograms.end(), this);
@@ -243,28 +245,28 @@ const std::shared_ptr<Shader>& Program::attachNew(GLenum                        
 
 const std::shared_ptr<Shader>& Program::attach(const std::shared_ptr<Shader>& shader)
 {
-    glAttachShader(m_handle, shader->id());
+    glAttachShader(*m_handle, *(shader->id()));
     return m_shaders[shader->type()] = shader;
 }
 
 bool Program::link(bool checkStatus) const
 {
     m_linked = false;
-    glLinkProgram(m_handle);
+    glLinkProgram(*m_handle);
     if(checkStatus)
     {
         GLint status;
-        glGetProgramiv(m_handle, GL_LINK_STATUS, &status);
+        glGetProgramiv(*m_handle, GL_LINK_STATUS, &status);
         if(GL_FALSE == status)
         {
             GLint logLen;
-            glGetProgramiv(m_handle, GL_INFO_LOG_LENGTH, &logLen);
+            glGetProgramiv(*m_handle, GL_INFO_LOG_LENGTH, &logLen);
             if(logLen > 0)
             {
                 std::string log;
                 log.resize(logLen);
                 GLsizei written;
-                glGetProgramInfoLog(m_handle, logLen, &written, &log[0]);
+                glGetProgramInfoLog(*m_handle, logLen, &written, &log[0]);
                 std::cout << "Program log: " << log << std::endl;
             }
             return false;
@@ -288,15 +290,15 @@ Program::Program(Program&& other) noexcept
         , m_shaders(std::move(other.m_shaders))
         , m_linked(other.m_linked)
 {
-    other.m_handle = 0;
+    other.m_handle->id = 0;
     std::unique_lock<std::mutex> lock(m_programMutex);
     m_allPrograms.emplace_back(this);
 }
 
 Program& Program::operator=(const Program& other)
 {
-    if(!glIsProgram(m_handle))
-        m_handle = glCreateProgram();
+    if(!glIsProgram(*m_handle))
+        m_handle = glCreateProgramRAII();
     for(const auto& shader : other.m_shaders)
         attach(shader.second);
     if(other.m_linked)
@@ -306,12 +308,12 @@ Program& Program::operator=(const Program& other)
 
 Program& Program::operator=(Program&& other) noexcept
 {
-    if(glIsProgram(m_handle))
-        glDeleteProgram(m_handle);
+    if(glIsProgram(*m_handle))
+        glDeleteProgram(*m_handle);
     m_handle       = other.m_handle;
     m_shaders      = std::move(other.m_shaders);
     m_linked       = other.m_linked;
-    other.m_handle = 0;
+    other.m_handle->id = 0;
     return *this;
 }
 
@@ -319,12 +321,12 @@ void Program::use() const
 {
     if(!m_linked)
         link() ? 0 : throw std::runtime_error("Failed to link program!");
-    glUseProgram(m_handle);
+    glUseProgram(*m_handle);
 }
-GLuint Program::id() const { return m_handle; }
+GLprogram Program::id() const { return m_handle; }
 bool   Program::reload(bool checkStatus)
 {
-    if(m_handle == 0)
+    if(*m_handle == 0)
         return false;
 
     bool success = true;

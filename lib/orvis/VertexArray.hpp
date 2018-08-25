@@ -66,7 +66,7 @@ public:
      * @param stride The byte size of each vertex element in this buffer. (Or the byte distance
      * between the element start positions).
      */
-    void setVertexBuffer(const GLuint& buffer, std::variant<GLuint, VertexAttributeBinding> binding, GLintptr offset, GLsizei stride);
+    void setVertexBuffer(const GLbuffer& buffer, std::variant<GLuint, VertexAttributeBinding> binding, GLintptr offset, GLsizei stride);
 
     /**
      * @brief Binds an element buffer to this vertex array for indexed rendering.
@@ -79,12 +79,12 @@ public:
      * @brief Binds an element buffer to this vertex array for indexed rendering.
      * @param buffer The element buffer containing the vertex indices.
      */
-    void setElementBuffer(const GLuint& buffer);
+    void setElementBuffer(const GLbuffer& buffer);
 
     /**
      * @return The opengl vertex array ID.
      */
-    GLuint id() const;
+    GLvertexArray id() const;
 
     /**
      * @brief Activates the vertex array e.g. for drawing.
@@ -105,7 +105,7 @@ private:
     /** @brief A binding description for caching bindings needed for copying VAOs. */
     struct Bindings
     {
-        GLuint                                         buffer = GL_INVALID_INDEX;
+        GLbuffer                                       buffer;
         GLintptr                                       offset = 0;
         GLsizei                                        stride = 0;
         std::vector<std::reference_wrapper<Attribute>> attributes;
@@ -114,10 +114,10 @@ private:
     using AttribMap = std::unordered_map<GLuint, std::unique_ptr<Attribute>>;
     using BindingMap = std::unordered_map<GLuint, Bindings>;
 
-    GLuint     m_id = GL_INVALID_INDEX;         //!< The VAO ID.
+    GLvertexArray     m_id;         //!< The VAO ID.
     AttribMap  m_attributes; //!< Maps attribute indices to their set attributes.
     BindingMap m_bindings;   //!< Maps buffer bindings to a vector of referencing attributes.
-    GLuint     m_elementArrayBuffer = GL_INVALID_INDEX;
+    GLbuffer   m_elementArrayBuffer;
 };
 
 #include "VertexArray.inl"
