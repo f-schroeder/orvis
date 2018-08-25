@@ -38,11 +38,11 @@ typedef std::shared_ptr<GlPtr<deleteVertexArray>> GLvertexArray;
 typedef std::shared_ptr<GlPtr<deleteQuery>> GLquery;
 
 // creation functions
-inline GLtexture glCreateTexture(GLenum target) { GLuint ret; glCreateTextures(target, 1, &ret); return std::make_shared<GlPtr<deleteTexture>>(ret); }
-inline GLsampler glCreateSampler() { GLuint ret; glCreateSamplers(1, &ret); return std::make_shared<GlPtr<deleteSampler>>(ret); }
+inline GLtexture glCreateTextureRAII(GLenum target) { GLuint ret; glCreateTextures(target, 1, &ret); return std::make_shared<GlPtr<deleteTexture>>(ret); }
+inline GLsampler glCreateSamplerRAII() { GLuint ret; glCreateSamplers(1, &ret); return std::make_shared<GlPtr<deleteSampler>>(ret); }
 inline GLshader glCreateShaderRAII(GLenum type) { GLuint ret = gl::glCreateShader(type); return std::make_shared<GlPtr<deleteShader>>(ret); }
 inline GLprogram glCreateProgramRAII() { GLuint ret = gl::glCreateProgram(); return std::make_shared<GlPtr<deleteProgram>>(ret); }
-inline GLbuffer glCreateBuffer() { GLuint ret; glCreateBuffers(1, &ret); return std::make_shared<GlPtr<deleteBuffer>>(ret); }
-inline GLframebuffer glCreateFramebuffer() { GLuint ret; glCreateFramebuffers(1, &ret); return std::make_shared<GlPtr<deleteFramebuffer>>(ret); }
-inline GLvertexArray glCreateVertexArray() { GLuint ret; glCreateVertexArrays(1, &ret); return std::make_shared<GlPtr<deleteVertexArray>>(ret); }
-inline GLquery glCreateQuery(GLenum target) { GLuint ret; glCreateQueries(target, 1, &ret); return std::make_shared<GlPtr<deleteQuery>>(ret); }
+inline GLbuffer glCreateBufferRAII() { GLuint ret; glCreateBuffers(1, &ret); return std::make_shared<GlPtr<deleteBuffer>>(ret); }
+inline GLframebuffer glCreateFramebufferRAII() { GLuint ret; glCreateFramebuffers(1, &ret); return std::make_shared<GlPtr<deleteFramebuffer>>(ret); }
+inline GLvertexArray glCreateVertexArrayRAII() { GLuint ret; glCreateVertexArrays(1, &ret); return std::make_shared<GlPtr<deleteVertexArray>>(ret); }
+inline GLquery glCreateQueryRAII(GLenum target) { GLuint ret; glCreateQueries(target, 1, &ret); return std::make_shared<GlPtr<deleteQuery>>(ret); }

@@ -3,7 +3,7 @@
 #include "Util.hpp"
 #include "stb/stb_image.h"
 
-Sampler::Sampler() : m_samplerId(glCreateSampler())
+Sampler::Sampler() : m_samplerId(glCreateSamplerRAII())
 {
     // Set some default parameters for the sampler
     set(GL_TEXTURE_CUBE_MAP_SEAMLESS, true);
@@ -19,7 +19,7 @@ Sampler::~Sampler()
 	// done by RAII
 }
 
-Sampler::Sampler(const Sampler& other) : m_samplerId(glCreateSampler())
+Sampler::Sampler(const Sampler& other) : m_samplerId(glCreateSamplerRAII())
 {
     for (const auto& var : other.m_samplerParams)
     {
@@ -41,7 +41,7 @@ Sampler::Sampler(Sampler&& other) noexcept
 Sampler& Sampler::operator=(const Sampler& other)
 {
 	m_samplerId.reset();
-	m_samplerId = glCreateSampler();
+	m_samplerId = glCreateSamplerRAII();
 
     for (const auto& var : other.m_samplerParams)
     {
@@ -80,7 +80,7 @@ void Sampler::set(GLenum texParam, GLenum value)
 }
 
 Texture::Texture(GLenum target)
-    : m_textureId(glCreateTexture(target)), m_target(target)
+    : m_textureId(glCreateTextureRAII(target)), m_target(target)
 {
 }
 
@@ -256,7 +256,7 @@ Texture::Texture(const Texture& other)
 {
     m_size = other.m_size;
     m_target = other.m_target;
-	m_textureId = glCreateTexture(m_target);
+	m_textureId = glCreateTextureRAII(m_target);
     m_format = other.m_format;
     m_defaultSampler = other.m_defaultSampler;
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -348,7 +348,7 @@ Texture& Texture::operator=(const Texture& other)
 	m_textureId.reset();
     m_size = other.m_size;
     m_target = other.m_target;
-	m_textureId = glCreateTexture(m_target);
+	m_textureId = glCreateTextureRAII(m_target);
     m_format = other.m_format;
     m_defaultSampler = other.m_defaultSampler;
     m_fixedSampleLocations = other.m_fixedSampleLocations;

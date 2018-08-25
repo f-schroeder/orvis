@@ -1,6 +1,6 @@
 #include "VertexArray.hpp"
 
-VertexArray::VertexArray() : m_id(glCreateVertexArray())
+VertexArray::VertexArray() : m_id(glCreateVertexArrayRAII())
 {
 }
 
@@ -69,7 +69,7 @@ VertexArray::VertexArray(VertexArray&& other) noexcept
 VertexArray& VertexArray::operator=(const VertexArray& other)
 {
 	m_id.reset();
-	m_id = glCreateVertexArray();
+	m_id = glCreateVertexArrayRAII();
 
     for(const auto& attr : other.m_attributes)
     {

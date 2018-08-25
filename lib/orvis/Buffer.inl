@@ -4,7 +4,7 @@
 
 template <typename T>
 Buffer<T>::Buffer()
-	: m_storageFlags(GL_NONE_BIT), m_size(0), m_buffer(glCreateBuffer())
+	: m_storageFlags(GL_NONE_BIT), m_size(0), m_buffer(glCreateBufferRAII())
 {
 }
 
@@ -61,7 +61,7 @@ template <typename T>
 Buffer<T>& Buffer<T>::operator=(const Buffer& other)
 {
 	m_buffer.reset();
-	m_buffer = glCreateBuffer();
+	m_buffer = glCreateBufferRAII();
 
     m_size         = other.m_size;
     m_storageFlags = other.m_storageFlags;

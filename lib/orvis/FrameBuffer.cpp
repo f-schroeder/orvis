@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-FrameBuffer::FrameBuffer() : m_fbo(glCreateFramebuffer())
+FrameBuffer::FrameBuffer() : m_fbo(glCreateFramebufferRAII())
 {
 }
 
@@ -87,7 +87,7 @@ void FrameBuffer::resize(glm::ivec2 size)
     m_size = size;
 
 	m_fbo.reset();
-	m_fbo = glCreateFramebuffer();
+	m_fbo = glCreateFramebufferRAII();
 
     if(m_depthTexture)
     {
