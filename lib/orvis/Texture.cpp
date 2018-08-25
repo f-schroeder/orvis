@@ -5,8 +5,6 @@
 
 Sampler::Sampler() : m_samplerId(glCreateSampler())
 {
-    //glGenSamplers(1, &m_samplerId);
-
     // Set some default parameters for the sampler
     set(GL_TEXTURE_CUBE_MAP_SEAMLESS, true);
     set(GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
@@ -19,13 +17,10 @@ Sampler::Sampler() : m_samplerId(glCreateSampler())
 Sampler::~Sampler()
 {
 	// done by RAII
-    //if (m_samplerId != GL_INVALID_INDEX)
-    //    glDeleteSamplers(1, &m_samplerId);
 }
 
 Sampler::Sampler(const Sampler& other) : m_samplerId(glCreateSampler())
 {
-    //glGenSamplers(1, &m_samplerId);
     for (const auto& var : other.m_samplerParams)
     {
         if (std::holds_alternative<int>(var.second))
@@ -41,15 +36,10 @@ Sampler::Sampler(Sampler&& other) noexcept
 {
     m_samplerId = std::move(other.m_samplerId);
     m_samplerParams = std::move(other.m_samplerParams);
-    //other.m_samplerId->id = 0;
 }
 
 Sampler& Sampler::operator=(const Sampler& other)
 {
-	//if (m_samplerId)
- //       glDeleteSamplers(1, &m_samplerId);
- //   glGenSamplers(1, &m_samplerId);
-
 	m_samplerId.reset();
 	m_samplerId = glCreateSampler();
 
@@ -67,11 +57,9 @@ Sampler& Sampler::operator=(const Sampler& other)
 
 Sampler& Sampler::operator=(Sampler&& other) noexcept
 {
-	//if (*m_samplerId)
-		m_samplerId.reset(); // glDeleteSamplers(1, &(*m_samplerId));
+	m_samplerId.reset();
     m_samplerId = std::move(other.m_samplerId);
     m_samplerParams = std::move(other.m_samplerParams);
-    //other.m_samplerId->id = 0;
     return *this;
 }
 
@@ -94,7 +82,6 @@ void Sampler::set(GLenum texParam, GLenum value)
 Texture::Texture(GLenum target)
     : m_textureId(glCreateTexture(target)), m_target(target)
 {
-    //glCreateTextures(m_target, 1, &m_textureId);
 }
 
 Texture::Texture(GLenum target, GLenum format, int size, int levels)
@@ -336,13 +323,11 @@ Texture::Texture(Texture&& other) noexcept
     m_hasMipmaps = other.m_hasMipmaps;
     m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
-    //other.m_textureId->id = 0;
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept
 {
-	//if (glIsTexture(*m_textureId))
-		m_textureId.reset(); // glDeleteTextures(1, &(*m_textureId));
+	m_textureId.reset();
     m_size = other.m_size;
     m_target = other.m_target;
     m_textureId = std::move(other.m_textureId);
@@ -355,18 +340,14 @@ Texture& Texture::operator=(Texture&& other) noexcept
     m_hasMipmaps = other.m_hasMipmaps;
     m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
-    //other.m_textureId->id = 0;
     return *this;
 }
 
 Texture& Texture::operator=(const Texture& other)
 {
-    //if (glIsTexture(m_textureId))
-    //    glDeleteTextures(1, &m_textureId);
 	m_textureId.reset();
     m_size = other.m_size;
     m_target = other.m_target;
-    //glCreateTextures(m_target, 1, &m_textureId);
 	m_textureId = glCreateTexture(m_target);
     m_format = other.m_format;
     m_defaultSampler = other.m_defaultSampler;

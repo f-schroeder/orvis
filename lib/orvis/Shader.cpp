@@ -82,8 +82,6 @@ Shader::Shader(GLenum type, const std::vector<ShaderSource>& sources, std::vecto
 Shader::~Shader()
 {
 	// done by RAII
-    //if(glIsShader(m_handle))
-    //    glDeleteShader(m_handle);
 }
 
 Shader::Shader(const Shader& other)
@@ -97,7 +95,6 @@ Shader::Shader(Shader&& other) noexcept
         , m_handle(std::move(other.m_handle))
         , m_sources(std::move(other.m_sources))
 {
-    //other.m_handle->id = 0;
 }
 
 Shader& Shader::operator=(const Shader& other)
@@ -112,13 +109,10 @@ Shader& Shader::operator=(const Shader& other)
 
 Shader& Shader::operator=(Shader&& other) noexcept
 {
-    //if(glIsShader(*m_handle))
-    //    glDeleteShader(*m_handle);
 	m_handle.reset();
     m_type         = other.type();
     m_handle       = std::move(other.m_handle);
     m_sources      = std::move(other.m_sources);
-    //other.m_handle->id = 0;
     return *this;
 }
 
@@ -199,8 +193,6 @@ Program::Program()
 Program::~Program()
 {
 	// done by RAII
-    //if(glIsProgram(m_handle))
-    //    glDeleteProgram(m_handle);
 
     std::unique_lock<std::mutex> lock(m_programMutex);
     if(const auto it = std::find(m_allPrograms.begin(), m_allPrograms.end(), this);
@@ -291,7 +283,6 @@ Program::Program(Program&& other) noexcept
         , m_shaders(std::move(other.m_shaders))
         , m_linked(other.m_linked)
 {
-    //other.m_handle->id = 0;
     std::unique_lock<std::mutex> lock(m_programMutex);
     m_allPrograms.emplace_back(this);
 }
@@ -309,13 +300,10 @@ Program& Program::operator=(const Program& other)
 
 Program& Program::operator=(Program&& other) noexcept
 {
-    //if(glIsProgram(*m_handle))
-    //    glDeleteProgram(*m_handle);
 	m_handle.reset();
     m_handle       = std::move(other.m_handle);
     m_shaders      = std::move(other.m_shaders);
     m_linked       = other.m_linked;
-    //other.m_handle->id = 0;
     return *this;
 }
 

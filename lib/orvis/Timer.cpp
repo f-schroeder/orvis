@@ -4,16 +4,12 @@
 
 Timer::Timer() : m_query(glCreateQuery(GL_TIME_ELAPSED))
 {
-    //glCreateQueries(GL_TIME_ELAPSED, 1, &m_query);
 }
 
 Timer::~Timer()
 {
 	// done by RAII
-    //if (glfwGetCurrentContext() != nullptr)
-    //{
-    //    glDeleteQueries(1, &m_query);
-    //}
+
     util::getGlError(__LINE__, __FUNCTION__);
 }
 

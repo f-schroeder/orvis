@@ -4,7 +4,6 @@
 
 FrameBuffer::FrameBuffer() : m_fbo(glCreateFramebuffer())
 {
-	//glCreateFramebuffers(1, &m_fbo);
 }
 
 FrameBuffer::FrameBuffer(glm::ivec2 depthTextureSize)
@@ -87,11 +86,6 @@ void FrameBuffer::resize(glm::ivec2 size)
 
     m_size = size;
 
-    //if (m_fbo != GL_INVALID_VALUE)
-    //    glDeleteFramebuffers(1, &m_fbo);
-
-    //glCreateFramebuffers(1, &m_fbo);
-
 	m_fbo.reset();
 	m_fbo = glCreateFramebuffer();
 
@@ -122,8 +116,6 @@ GLframebuffer FrameBuffer::id() const { return m_fbo; }
 FrameBuffer::~FrameBuffer()
 {
 	// done by RAII
-    //if (m_fbo != GL_INVALID_VALUE)
-    //    glDeleteFramebuffers(1, &m_fbo);
 }
 
 void FrameBuffer::blit(const std::shared_ptr<FrameBuffer>& other) const

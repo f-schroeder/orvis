@@ -2,14 +2,11 @@
 
 VertexArray::VertexArray() : m_id(glCreateVertexArray())
 {
-	//glCreateVertexArrays(1, &m_id);
 }
 
 VertexArray::~VertexArray()
 {
 	// done by RAII
-    //if(glIsVertexArray(m_id))
-    //    glDeleteVertexArrays(1, &m_id);
 }
 
 void VertexArray::format(std::variant<GLuint, VertexAttributeBinding> attribute, GLint components, GLenum type, bool normalized,
@@ -67,16 +64,10 @@ VertexArray::VertexArray(VertexArray&& other) noexcept
     m_id         = std::move(other.m_id);
     m_attributes = std::move(other.m_attributes);
     m_bindings   = std::move(other.m_bindings);
-    //other.m_id->id   = 0;
 }
 
 VertexArray& VertexArray::operator=(const VertexArray& other)
 {
-    //if(glIsVertexArray(m_id))
-    //    glDeleteVertexArrays(1, &m_id);
-
-    //glCreateVertexArrays(1, &m_id);
-
 	m_id.reset();
 	m_id = glCreateVertexArray();
 
@@ -100,13 +91,11 @@ VertexArray& VertexArray::operator=(const VertexArray& other)
 
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
 {
-	//if (glIsVertexArray(*m_id))
-		m_id.reset(); // glDeleteVertexArrays(1, &(*m_id));
+	m_id.reset();
     m_id                 = std::move(other.m_id);
     m_attributes         = std::move(other.m_attributes);
     m_bindings           = std::move(other.m_bindings);
     m_elementArrayBuffer = std::move(other.m_elementArrayBuffer);
-    //other.m_id->id           = 0;
     return *this;
 }
 
