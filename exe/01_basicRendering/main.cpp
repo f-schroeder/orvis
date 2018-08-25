@@ -17,7 +17,7 @@ int main()
 
     util::enableDebugCallback();
 
-    auto cam = std::make_shared<Camera>(glm::perspectiveFov(glm::radians(60.f), static_cast<float>(width), static_cast<float>(height), 0.1f, 3000.f));
+    auto cam = std::make_shared<Camera>(glm::infinitePerspective(glm::radians(60.f), static_cast<float>(width) / static_cast<float>(height), 0.1f));
 
     Cubemap skybox;
     skybox.generateCubemap(util::resourcesPath / "textures/rustig/hdr");
