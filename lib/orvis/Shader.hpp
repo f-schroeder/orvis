@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 #include "Binding.hpp"
+#include "OpenGL_RAII.hpp"
 
 using namespace gl;
 
@@ -118,11 +119,11 @@ public:
     GLenum type() const;
 
     /**@return The OpenGL shader name (ID). */
-    GLuint id() const;
+    GLshader id() const;
 
 private:
     GLenum                          m_type;
-    GLuint                          m_handle;
+    GLshader                        m_handle;
     std::vector<ShaderSource>       m_sources;
     std::vector<glsp::definition>   m_definitions;
 };
@@ -212,7 +213,7 @@ public:
     void use() const;
 
     /** @return The OpenGL shader program name (ID). */
-    GLuint id() const;
+    GLprogram id() const;
 
     /** @brief Reloads all attached shaders and links the program if it has been linked before.
      * @param checkStatus Passed to Program::link(bool) and Shader::reload(bool) to
@@ -233,7 +234,7 @@ public:
 private:
     static std::mutex                                   m_programMutex;
     static std::vector<Program*>                        m_allPrograms;
-    GLuint                                              m_handle;
+    GLprogram                                           m_handle;
     std::unordered_map<GLenum, std::shared_ptr<Shader>> m_shaders;
     mutable bool                                        m_linked;
 };

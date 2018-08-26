@@ -3,10 +3,8 @@
 #include "Util.hpp"
 #include "stb/stb_image.h"
 
-Sampler::Sampler()
+Sampler::Sampler() : m_samplerId(glCreateSamplerRAII())
 {
-    glGenSamplers(1, &m_samplerId);
-
     // Set some default parameters for the sampler
     set(GL_TEXTURE_CUBE_MAP_SEAMLESS, true);
     set(GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
@@ -18,13 +16,11 @@ Sampler::Sampler()
 }
 Sampler::~Sampler()
 {
-    if (m_samplerId != GL_INVALID_INDEX)
-        glDeleteSamplers(1, &m_samplerId);
+	// done by RAII
 }
 
-Sampler::Sampler(const Sampler& other)
+Sampler::Sampler(const Sampler& other) : m_samplerId(glCreateSamplerRAII())
 {
-    glGenSamplers(1, &m_samplerId);
     for (const auto& var : other.m_samplerParams)
     {
         if (std::holds_alternative<int>(var.second))
@@ -38,16 +34,14 @@ Sampler::Sampler(const Sampler& other)
 
 Sampler::Sampler(Sampler&& other) noexcept
 {
-    m_samplerId = other.m_samplerId;
+    m_samplerId = std::move(other.m_samplerId);
     m_samplerParams = std::move(other.m_samplerParams);
-    other.m_samplerId = 0;
 }
 
 Sampler& Sampler::operator=(const Sampler& other)
 {
-    if (m_samplerId)
-        glDeleteSamplers(1, &m_samplerId);
-    glGenSamplers(1, &m_samplerId);
+	m_samplerId.reset();
+	m_samplerId = glCreateSamplerRAII();
 
     for (const auto& var : other.m_samplerParams)
     {
@@ -63,34 +57,31 @@ Sampler& Sampler::operator=(const Sampler& other)
 
 Sampler& Sampler::operator=(Sampler&& other) noexcept
 {
-    if (m_samplerId)
-        glDeleteSamplers(1, &m_samplerId);
-    m_samplerId = other.m_samplerId;
+	m_samplerId.reset();
+    m_samplerId = std::move(other.m_samplerId);
     m_samplerParams = std::move(other.m_samplerParams);
-    other.m_samplerId = 0;
     return *this;
 }
 
 void Sampler::set(GLenum texParam, int value)
 {
     m_samplerParams[texParam] = value;
-    glSamplerParameteri(m_samplerId, texParam, value);
+    glSamplerParameteri(*m_samplerId, texParam, value);
 }
 void Sampler::set(GLenum texParam, float value)
 {
     m_samplerParams[texParam] = value;
-    glSamplerParameterf(m_samplerId, texParam, value);
+    glSamplerParameterf(*m_samplerId, texParam, value);
 }
 void Sampler::set(GLenum texParam, GLenum value)
 {
     m_samplerParams[texParam] = value;
-    glSamplerParametere(m_samplerId, texParam, value);
+    glSamplerParametere(*m_samplerId, texParam, value);
 }
 
 Texture::Texture(GLenum target)
-    : m_target(target)
+    : m_textureId(glCreateTextureRAII(target)), m_target(target)
 {
-    glCreateTextures(m_target, 1, &m_textureId);
 }
 
 Texture::Texture(GLenum target, GLenum format, int size, int levels)
@@ -99,7 +90,7 @@ Texture::Texture(GLenum target, GLenum format, int size, int levels)
     m_format = format;
     m_size = { size, 1, 1 };
     m_levels = levels == -1 ? static_cast<int>(floor(log2(size)) + 1) : levels;
-    glTextureStorage1D(m_textureId, m_levels, m_format, size);
+    glTextureStorage1D(*m_textureId, m_levels, m_format, size);
 
     util::getGlError(__LINE__, __FUNCTION__);
 
@@ -115,7 +106,7 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, int levels)
     m_levels = levels == -1 ? static_cast<int>(glm::floor(std::log2(glm::max(size.x, size.y))) + 1)
         : levels;
 
-    glTextureStorage2D(m_textureId, m_levels, m_format, m_size.x, m_size.y);
+    glTextureStorage2D(*m_textureId, m_levels, m_format, m_size.x, m_size.y);
 
     util::getGlError(__LINE__, __FUNCTION__);
 
@@ -191,7 +182,7 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, int levels)
             floor(std::log2(glm::max(glm::max(size.x, size.z), size.y))) + 1)
         : levels;
     glTextureStorage3D(
-        m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
+        *m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
 
     util::getGlError(__LINE__, __FUNCTION__);
 
@@ -207,7 +198,7 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec2 size, Samples samples,
     m_levels = 1;
     m_samples = samples;
     m_fixedSampleLocations = fixedSampleLocations;
-    glTextureStorage2DMultisample(m_textureId,
+    glTextureStorage2DMultisample(*m_textureId,
         static_cast<int>(m_samples),
         m_format,
         m_size.x,
@@ -228,7 +219,7 @@ Texture::Texture(GLenum target, GLenum format, glm::ivec3 size, Samples samples,
     m_levels = 1;
     m_samples = samples;
     m_fixedSampleLocations = fixedSampleLocations;
-    glTextureStorage3DMultisample(m_textureId,
+    glTextureStorage3DMultisample(*m_textureId,
         static_cast<int>(m_samples),
         m_format,
         m_size.x,
@@ -252,19 +243,20 @@ Texture::~Texture()
     //                        if(glIsImageHandleResidentARB(m4.second))
     //                            glMakeImageHandleNonResidentARB(m4.second);
 
-    if (m_textureId != GL_INVALID_INDEX)
-    {
-        /* if(glMakeTextureHandleNonResidentARB && glIsTextureHandleResidentARB(m_textureHandle))
-             glMakeTextureHandleNonResidentARB(m_textureHandle);*/
-        glDeleteTextures(1, &m_textureId);
-    }
+	// done by RAII
+    //if (m_textureId != GL_INVALID_INDEX)
+    //{
+    //    /* if(glMakeTextureHandleNonResidentARB && glIsTextureHandleResidentARB(m_textureHandle))
+    //         glMakeTextureHandleNonResidentARB(m_textureHandle);*/
+    //    glDeleteTextures(1, &m_textureId);
+    //}
 }
 
 Texture::Texture(const Texture& other)
 {
     m_size = other.m_size;
     m_target = other.m_target;
-    glCreateTextures(m_target, 1, &m_textureId);
+	m_textureId = glCreateTextureRAII(m_target);
     m_format = other.m_format;
     m_defaultSampler = other.m_defaultSampler;
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -275,25 +267,25 @@ Texture::Texture(const Texture& other)
     switch (m_target)
     {
     case GL_TEXTURE_1D:
-        glTextureStorage1D(m_textureId, m_levels, m_format, m_size.x);
+        glTextureStorage1D(*m_textureId, m_levels, m_format, m_size.x);
         assign1D(GL_RGBA, GL_FLOAT, other.data<float>(GL_RGBA).data());
         break;
     case GL_TEXTURE_1D_ARRAY:
     case GL_TEXTURE_2D:
     case GL_TEXTURE_CUBE_MAP:
     case GL_TEXTURE_RECTANGLE:
-        glTextureStorage2D(m_textureId, m_levels, m_format, m_size.x, m_size.y);
+        glTextureStorage2D(*m_textureId, m_levels, m_format, m_size.x, m_size.y);
         assign2D(GL_RGBA, GL_FLOAT, other.data<float>(GL_RGBA).data());
         break;
     case GL_TEXTURE_CUBE_MAP_ARRAY:
     case GL_TEXTURE_2D_ARRAY:
     case GL_TEXTURE_3D:
         glTextureStorage3D(
-            m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
+            *m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
         assign3D(GL_RGBA, GL_FLOAT, other.data<float>(GL_RGBA).data());
         break;
     case GL_TEXTURE_2D_MULTISAMPLE:
-        glTextureStorage2DMultisample(m_textureId,
+        glTextureStorage2DMultisample(*m_textureId,
             static_cast<int>(m_samples),
             m_format,
             m_size.x,
@@ -301,7 +293,7 @@ Texture::Texture(const Texture& other)
             m_fixedSampleLocations);
         break;
     case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-        glTextureStorage3DMultisample(m_textureId,
+        glTextureStorage3DMultisample(*m_textureId,
             static_cast<int>(m_samples),
             m_format,
             m_size.x,
@@ -321,7 +313,7 @@ Texture::Texture(Texture&& other) noexcept
 {
     m_size = other.m_size;
     m_target = other.m_target;
-    m_textureId = other.m_textureId;
+    m_textureId = std::move(other.m_textureId);
     m_format = other.m_format;
     m_defaultSampler = std::move(other.m_defaultSampler);
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -331,16 +323,14 @@ Texture::Texture(Texture&& other) noexcept
     m_hasMipmaps = other.m_hasMipmaps;
     m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
-    other.m_textureId = 0;
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept
 {
-    if (glIsTexture(m_textureId))
-        glDeleteTextures(1, &m_textureId);
+	m_textureId.reset();
     m_size = other.m_size;
     m_target = other.m_target;
-    m_textureId = other.m_textureId;
+    m_textureId = std::move(other.m_textureId);
     m_format = other.m_format;
     m_defaultSampler = std::move(other.m_defaultSampler);
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -350,17 +340,15 @@ Texture& Texture::operator=(Texture&& other) noexcept
     m_hasMipmaps = other.m_hasMipmaps;
     m_imageHandleTree = std::move(other.m_imageHandleTree);
     m_textureHandle = other.m_textureHandle;
-    other.m_textureId = 0;
     return *this;
 }
 
 Texture& Texture::operator=(const Texture& other)
 {
-    if (glIsTexture(m_textureId))
-        glDeleteTextures(1, &m_textureId);
+	m_textureId.reset();
     m_size = other.m_size;
     m_target = other.m_target;
-    glCreateTextures(m_target, 1, &m_textureId);
+	m_textureId = glCreateTextureRAII(m_target);
     m_format = other.m_format;
     m_defaultSampler = other.m_defaultSampler;
     m_fixedSampleLocations = other.m_fixedSampleLocations;
@@ -371,25 +359,25 @@ Texture& Texture::operator=(const Texture& other)
     switch (m_target)
     {
     case GL_TEXTURE_1D:
-        glTextureStorage1D(m_textureId, m_levels, m_format, m_size.x);
+        glTextureStorage1D(*m_textureId, m_levels, m_format, m_size.x);
         assign1D(GL_RGBA, GL_FLOAT, other.data<float>(GL_RGBA).data());
         break;
     case GL_TEXTURE_1D_ARRAY:
     case GL_TEXTURE_2D:
     case GL_TEXTURE_CUBE_MAP:
     case GL_TEXTURE_RECTANGLE:
-        glTextureStorage2D(m_textureId, m_levels, m_format, m_size.x, m_size.y);
+        glTextureStorage2D(*m_textureId, m_levels, m_format, m_size.x, m_size.y);
         assign2D(GL_RGBA, GL_FLOAT, other.data<float>(GL_RGBA).data());
         break;
     case GL_TEXTURE_CUBE_MAP_ARRAY:
     case GL_TEXTURE_2D_ARRAY:
     case GL_TEXTURE_3D:
         glTextureStorage3D(
-            m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
+            *m_textureId, m_levels, m_format, m_size.x, m_size.y, m_size.z);
         assign3D(GL_RGBA, GL_FLOAT, other.data<float>(GL_RGBA).data());
         break;
     case GL_TEXTURE_2D_MULTISAMPLE:
-        glTextureStorage2DMultisample(m_textureId,
+        glTextureStorage2DMultisample(*m_textureId,
             static_cast<int>(m_samples),
             m_format,
             m_size.x,
@@ -397,7 +385,7 @@ Texture& Texture::operator=(const Texture& other)
             m_fixedSampleLocations);
         break;
     case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-        glTextureStorage3DMultisample(m_textureId,
+        glTextureStorage3DMultisample(*m_textureId,
             static_cast<int>(m_samples),
             m_format,
             m_size.x,
@@ -486,7 +474,7 @@ void Texture::set(const TexParamMap& parameters)
 void Texture::assign1D(int level, int offset, int size, GLenum format, GLenum type,
     const void* pixels) const
 {
-    glTextureSubImage1D(m_textureId, level, offset, size, format, type, pixels);
+    glTextureSubImage1D(*m_textureId, level, offset, size, format, type, pixels);
     m_hasMipmaps = false;
 }
 
@@ -499,7 +487,7 @@ void Texture::assign2D(int level, glm::ivec2 offset, glm::ivec2 size, GLenum for
     const void* pixels) const
 {
     glTextureSubImage2D(
-        m_textureId, level, offset.x, offset.y, size.x, size.y, format, type, pixels);
+        *m_textureId, level, offset.x, offset.y, size.x, size.y, format, type, pixels);
     m_hasMipmaps = false;
 }
 
@@ -511,7 +499,7 @@ void Texture::assign2D(GLenum format, GLenum type, const void* pixels) const
 void Texture::assign3D(int level, glm::ivec3 offset, glm::ivec3 size, GLenum format, GLenum type,
     const void* pixels) const
 {
-    glTextureSubImage3D(m_textureId,
+    glTextureSubImage3D(*m_textureId,
         level,
         offset.x,
         offset.y,
@@ -531,15 +519,15 @@ void Texture::assign3D(GLenum format, GLenum type, const void* pixels) const
 
 void Texture::generateMipmaps() const
 {
-    glGenerateTextureMipmap(m_textureId);
+    glGenerateTextureMipmap(*m_textureId);
     m_hasMipmaps = true;
 }
 
 void Texture::bind(std::variant<GLuint, TextureBinding> binding) const
 {
     const GLuint b = std::holds_alternative<GLuint>(binding) ? std::get<GLuint>(binding) : static_cast<GLuint>(std::get<TextureBinding>(binding));
-    glBindSampler(b, sampler().id());
-    glBindTextureUnit(b, m_textureId);
+    glBindSampler(b, *(sampler().id()));
+    glBindTextureUnit(b, *m_textureId);
 }
 
 void Texture::bindImage(std::variant<GLuint, TextureBinding> binding) const { bindImage(binding, GL_READ_WRITE, m_format); }
@@ -551,14 +539,14 @@ void Texture::bindImage(std::variant<GLuint, TextureBinding> binding, int level,
     GLenum format) const
 {
     const GLuint b = std::holds_alternative<GLuint>(binding) ? std::get<GLuint>(binding) : static_cast<GLuint>(std::get<TextureBinding>(binding));
-    glBindImageTexture(b, m_textureId, level, layered, layer, access, format);
+    glBindImageTexture(b, *m_textureId, level, layered, layer, access, format);
 }
 
-GLuint Texture::id() const { return m_textureId; }
-GLuint Sampler::id() const { return m_samplerId; }
+GLtexture Texture::id() const { return m_textureId; }
+GLsampler Sampler::id() const { return m_samplerId; }
 void   Texture::clear(GLint level, GLenum format, GLenum type, const void* data) const
 {
-    glClearTexImage(m_textureId, level, format, type, data);
+    glClearTexImage(*m_textureId, level, format, type, data);
 }
 void Texture::clear(GLenum format, GLenum type, const void* data) const
 {
@@ -575,7 +563,7 @@ void Texture::generateHandle()
 
     util::getGlError(__LINE__, __FUNCTION__);
 
-    m_textureHandle = glGetTextureSamplerHandleARB(m_textureId, sampler().id());
+    m_textureHandle = glGetTextureSamplerHandleARB(*m_textureId, *(sampler().id()));
 
     util::getGlError(__LINE__, __FUNCTION__);
 
@@ -590,7 +578,7 @@ GLuint64 Texture::imageHandle(int level, bool layered, int layer, GLenum access,
 {
 
     GLuint64& handle = m_imageHandleTree[level][layered][layer][access][format];
-    handle = glGetImageHandleARB(m_textureId, level, layered, layer, format);
+    handle = glGetImageHandleARB(*m_textureId, level, layered, layer, format);
 
     util::getGlError(__LINE__, __FUNCTION__);
 

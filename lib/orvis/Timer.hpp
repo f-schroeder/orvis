@@ -3,6 +3,7 @@
 #include <vector>
 #include <glbinding/gl/gl.h>
 #include <GLFW/glfw3.h>
+#include "Camera.hpp"
 using namespace gl;
 
 class Timer
@@ -36,7 +37,7 @@ public:
 
 private:
     std::vector<float> m_ftimes;
-    GLuint m_query = GL_INVALID_INDEX;
+    GLquery m_query;
     GLuint m_elapsedTime = 0U;
     int m_done = false;
 };

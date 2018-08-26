@@ -4,9 +4,8 @@
 
 template <typename T>
 Buffer<T>::Buffer()
-        : m_storageFlags(GL_NONE_BIT), m_size(0)
+	: m_storageFlags(GL_NONE_BIT), m_size(0), m_buffer(glCreateBufferRAII())
 {
-    glCreateBuffers(1, &m_buffer);
 }
 
 template <typename T>
@@ -37,14 +36,13 @@ Buffer<T>::Buffer(const T* data, GLsizeiptr count, BufferStorageMask flags)
 {
     m_size         = count;
     m_storageFlags = flags;
-    glNamedBufferStorage(m_buffer, sizeof(T) * count, data, flags);
+    glNamedBufferStorage(*m_buffer, sizeof(T) * count, data, flags);
 }
 
 template <typename T>
 Buffer<T>::~Buffer()
 {
-    if(m_buffer != 0)
-        glDeleteBuffers(1, &m_buffer);
+	// done by RAII
 }
 
 template <typename T>
@@ -56,31 +54,28 @@ template <typename T>
 Buffer<T>::Buffer(Buffer&& other) noexcept
         : m_storageFlags(other.m_storageFlags)
         , m_size(other.m_size)
-        , m_buffer(other.m_buffer)
+        , m_buffer(std::move(other.m_buffer))
 {
-    other.m_buffer = 0;
 }
 template <typename T>
 Buffer<T>& Buffer<T>::operator=(const Buffer& other)
 {
-    if(m_buffer != 0)
-        glDeleteBuffers(1, &m_buffer);
-    glCreateBuffers(1, &m_buffer);
+	m_buffer.reset();
+	m_buffer = glCreateBufferRAII();
+
     m_size         = other.m_size;
     m_storageFlags = other.m_storageFlags;
     glNamedBufferStorage(
-            m_buffer, sizeof(T) * m_size, other.data().data(), m_storageFlags);
+            *m_buffer, sizeof(T) * m_size, other.data().data(), m_storageFlags);
     return *this;
 }
 template <typename T>
 Buffer<T>& Buffer<T>::operator=(Buffer&& other) noexcept
 {
-    if(m_buffer != 0)
-        glDeleteBuffers(1, &m_buffer);
+	m_buffer.reset();
     m_size         = other.m_size;
     m_storageFlags = other.m_storageFlags;
-    m_buffer       = other.m_buffer;
-    other.m_buffer = 0;
+    m_buffer       = std::move(other.m_buffer);
     return *this;
 }
 
@@ -104,7 +99,7 @@ template <typename T>
 void Buffer<T>::assign(const T* data, GLsizeiptr count, GLintptr offset)
 {
     assert(offset + count <= m_size && "Invalid Size and/or offset.");
-    glNamedBufferSubData(m_buffer, offset * sizeof(T), count * sizeof(T), data);
+    glNamedBufferSubData(*m_buffer, offset * sizeof(T), count * sizeof(T), data);
 }
 
 template <typename T>
@@ -151,7 +146,7 @@ void Buffer<T>::bind(GLenum target, std::variant<GLuint, BufferBinding> index, G
 {
     assert(offset + count <= m_size && "Invalid Size and/or offset.");
     const GLuint i = std::holds_alternative<GLuint>(index) ? std::get<GLuint>(index) : static_cast<GLuint>(std::get<BufferBinding>(index));
-    glBindBufferRange(target, i, m_buffer, offset * sizeof(T), count * sizeof(T));
+    glBindBufferRange(target, i, *m_buffer, offset * sizeof(T), count * sizeof(T));
 }
 
 template <typename T>
@@ -163,7 +158,7 @@ template <typename T>
 T* Buffer<T>::map(GLsizeiptr count, GLintptr offset, BufferAccessMask access)
 {
     return static_cast<T*>(
-            glMapNamedBufferRange(m_buffer, offset, count * sizeof(T), access));
+            glMapNamedBufferRange(*m_buffer, offset, count * sizeof(T), access));
 }
 template <typename T>
 GLsizeiptr Buffer<T>::size() const
@@ -184,12 +179,12 @@ std::vector<T> Buffer<T>::data(GLsizeiptr count, GLintptr offset) const
     assert(offset + count <= m_size && "Invalid Size and/or offset.");
     std::vector<T> result(count);
     glGetNamedBufferSubData(
-            m_buffer, offset * sizeof(T), count * sizeof(T), result.data());
+            *m_buffer, offset * sizeof(T), count * sizeof(T), result.data());
     return result;
 }
 
 template <typename T>
-GLuint Buffer<T>::id() const
+GLbuffer Buffer<T>::id() const
 {
     return m_buffer;
 }

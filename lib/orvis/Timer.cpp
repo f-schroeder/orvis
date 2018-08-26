@@ -2,23 +2,20 @@
 #include "imgui/imgui.h"
 #include "Util.hpp"
 
-Timer::Timer()
+Timer::Timer() : m_query(glCreateQueryRAII(GL_TIME_ELAPSED))
 {
-    glCreateQueries(GL_TIME_ELAPSED, 1, &m_query);
 }
 
 Timer::~Timer()
 {
-    if (glfwGetCurrentContext() != nullptr)
-    {
-        glDeleteQueries(1, &m_query);
-    }
+	// done by RAII
+
     util::getGlError(__LINE__, __FUNCTION__);
 }
 
 void Timer::start() const
 {
-    glBeginQuery(GL_TIME_ELAPSED, m_query);
+    glBeginQuery(GL_TIME_ELAPSED, *m_query);
 }
 
 void Timer::stop()
@@ -26,9 +23,9 @@ void Timer::stop()
     glEndQuery(GL_TIME_ELAPSED);
     while (!m_done)
     {
-        glGetQueryObjectiv(m_query, GL_QUERY_RESULT_AVAILABLE, &m_done);
+        glGetQueryObjectiv(*m_query, GL_QUERY_RESULT_AVAILABLE, &m_done);
     }
-    glGetQueryObjectuiv(m_query, GL_QUERY_RESULT, &m_elapsedTime);
+    glGetQueryObjectuiv(*m_query, GL_QUERY_RESULT, &m_elapsedTime);
     m_ftimes.push_back(m_elapsedTime / 1000000.f);
     if (m_ftimes.size() > 1000)
     {

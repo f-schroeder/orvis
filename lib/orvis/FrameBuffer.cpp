@@ -2,7 +2,9 @@
 #include <algorithm>
 #include <iostream>
 
-FrameBuffer::FrameBuffer() { glCreateFramebuffers(1, &m_fbo); }
+FrameBuffer::FrameBuffer() : m_fbo(glCreateFramebufferRAII())
+{
+}
 
 FrameBuffer::FrameBuffer(glm::ivec2 depthTextureSize)
     : FrameBuffer()
@@ -24,7 +26,7 @@ void FrameBuffer::setDepthAttachment(const std::shared_ptr<Texture>& texture)
     m_depthTexture = texture;
 
     glNamedFramebufferTexture(
-        m_fbo, GL_DEPTH_ATTACHMENT, texture->id(), 0);
+        *m_fbo, GL_DEPTH_ATTACHMENT, *(texture->id()), 0);
     check();
 }
 
@@ -39,7 +41,7 @@ void FrameBuffer::addColorAttachment(unsigned int attachmentIndex,
     m_colorAttachments[attachmentIndex] = texture;
 
     glNamedFramebufferTexture(
-        m_fbo, GL_COLOR_ATTACHMENT0 + attachmentIndex, texture->id(), 0);
+        *m_fbo, GL_COLOR_ATTACHMENT0 + attachmentIndex, *(texture->id()), 0);
     check();
 }
 
@@ -54,7 +56,7 @@ void FrameBuffer::updateDrawBuffers()
     std::sort(attachments.begin(), attachments.end());
     
     glNamedFramebufferDrawBuffers(
-        m_fbo, static_cast<GLsizei>(attachments.size()), attachments.data());
+        *m_fbo, static_cast<GLsizei>(attachments.size()), attachments.data());
 }
 
 std::shared_ptr<Texture> FrameBuffer::getColorTexture(unsigned int attachmentIndex)
@@ -84,45 +86,42 @@ void FrameBuffer::resize(glm::ivec2 size)
 
     m_size = size;
 
-    if (m_fbo != GL_INVALID_VALUE)
-        glDeleteFramebuffers(1, &m_fbo);
-
-    glCreateFramebuffers(1, &m_fbo);
+	m_fbo.reset();
+	m_fbo = glCreateFramebufferRAII();
 
     if(m_depthTexture)
     {
         m_depthTexture->resize(m_depthTexture->getTarget(), m_depthTexture->getFormat(), size);
         glNamedFramebufferTexture(
-            m_fbo, GL_DEPTH_ATTACHMENT, m_depthTexture->id(), 0);
+            *m_fbo, GL_DEPTH_ATTACHMENT, *(m_depthTexture->id()), 0);
     }
 
     std::for_each(m_colorAttachments.begin(), m_colorAttachments.end(), [&](auto& attachment) {
         attachment.second->resize(
             attachment.second->getTarget(), attachment.second->getFormat(), size);
         glNamedFramebufferTexture(
-            m_fbo, GL_COLOR_ATTACHMENT0 + attachment.first, attachment.second->id(), 0);
+            *m_fbo, GL_COLOR_ATTACHMENT0 + attachment.first, *(attachment.second->id()), 0);
     });
 
     updateDrawBuffers();
     check();
 }
 
-void FrameBuffer::bind() const { glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); }
+void FrameBuffer::bind() const { glBindFramebuffer(GL_FRAMEBUFFER, *m_fbo); }
 
 void FrameBuffer::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
-GLuint FrameBuffer::id() const { return m_fbo; }
+GLframebuffer FrameBuffer::id() const { return m_fbo; }
 
 FrameBuffer::~FrameBuffer()
 {
-    if (m_fbo != GL_INVALID_VALUE)
-        glDeleteFramebuffers(1, &m_fbo);
+	// done by RAII
 }
 
 void FrameBuffer::blit(const std::shared_ptr<FrameBuffer>& other) const
 {
-    glBlitNamedFramebuffer(m_fbo,
-        other->id(),
+    glBlitNamedFramebuffer(*m_fbo,
+        *(other->id()),
         0,
         0,
         m_size.x,
@@ -137,7 +136,7 @@ void FrameBuffer::blit(const std::shared_ptr<FrameBuffer>& other) const
 
 void FrameBuffer::blitToDefault() const
 {
-    glBlitNamedFramebuffer(m_fbo,
+    glBlitNamedFramebuffer(*m_fbo,
         0,
         0,
         0,
@@ -192,6 +191,6 @@ void PingPongBuffer::resize(glm::ivec2 size)
 void PingPongBuffer::clear()
 {
     glm::vec3 clearVal(0.f);
-    glClearNamedFramebufferfv(m_fbos[0]->id(), GL_COLOR, 0, glm::value_ptr(clearVal));
-    glClearNamedFramebufferfv(m_fbos[1]->id(), GL_COLOR, 0, glm::value_ptr(clearVal));
+    glClearNamedFramebufferfv(*(m_fbos[0]->id()), GL_COLOR, 0, glm::value_ptr(clearVal));
+    glClearNamedFramebufferfv(*(m_fbos[1]->id()), GL_COLOR, 0, glm::value_ptr(clearVal));
 }

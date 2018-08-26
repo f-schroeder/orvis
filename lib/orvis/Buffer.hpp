@@ -5,6 +5,7 @@
 #include <vector>
 #include <variant>
 #include "Binding.hpp"
+#include "OpenGL_RAII.hpp"
 
 using namespace gl;
 
@@ -216,12 +217,12 @@ public:
     /**
      * @return The OpenGL buffer name (ID).
      */
-    GLuint id() const;
+    GLbuffer id() const;
 
 private:
     BufferStorageMask   m_storageFlags = GL_NONE_BIT;
     GLsizeiptr          m_size = 0;
-    GLuint              m_buffer = GL_INVALID_INDEX;
+    GLbuffer            m_buffer;
 };
 
 #include "Buffer.inl"

@@ -97,8 +97,8 @@ namespace util
     void APIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                 const GLchar* message, const void* userParam)
     {
-        //ignore unbound texture warning and render buffer allocation warning
-        if (id == 131204 || id == 131169)
+        // ignore some warnings
+        if (id == 131204 /*unbound texture*/ || id == 131169 /*render buffer allocation*/ || id == 131186 /*copy from video to host*/)
             return;
 
         std::cout << "OpenGL debug callback called!" << '\n';

@@ -43,7 +43,7 @@ std::vector<T> Texture::data(GLenum format, int level) const
 
     const glm::ivec3 dim = m_size;
     std::vector<T>   pixels(dim.x * dim.y * dim.z * components);
-    glGetTextureImage(m_textureId,
+    glGetTextureImage(*m_textureId,
         level,
         format,
         type,
