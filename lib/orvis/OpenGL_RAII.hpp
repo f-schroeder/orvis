@@ -6,8 +6,7 @@
 using namespace gl;
 
 template<void(*deleterFunc)(GLuint)>
-struct GlPtr {
-	GLuint id;
+struct GlPtr {	
 	GlPtr(std::nullptr_t = nullptr) : id(0) {}
 	GlPtr(GLuint id) : id(id) {}
 	operator GLuint() const { return id; }
@@ -15,6 +14,9 @@ struct GlPtr {
 	friend bool operator != (GlPtr x, GlPtr y) { return x.id != y.id; }
 
 	~GlPtr() { if (glfwGetCurrentContext() != nullptr) deleterFunc(id); }
+
+private:
+	GLuint id;
 };
 
 // deleters

@@ -124,7 +124,7 @@ void Scene::render(const Program& program, bool overwriteCameraBuffer) const
     // DRAW
     program.use();
     m_multiDrawVao.bind();
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, *m_indirectDrawBuffer.id()); // TODO: use Buffer.bind() instead?!
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, *m_indirectDrawBuffer.id());
     glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(m_indirectDrawBuffer.size()), 0);
 }
 
