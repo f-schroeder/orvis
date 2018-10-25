@@ -1,15 +1,17 @@
 #pragma once
 
 #include "Bounds.hpp"
+#include "Material.hpp"
 #include "Light.hpp"
 #include "Mesh.hpp"
 #include "Camera.hpp"
 #include "VertexArray.hpp"
+#include <filesystem>
+#include <deque>
 
 // forward declarations
 class Light;
 class Mesh;
-class Light;
 
 struct IndirectDrawCommand
 {

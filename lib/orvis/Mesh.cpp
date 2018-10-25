@@ -4,182 +4,133 @@
 #include "Util.hpp"
 #include "stb/stb_image.h"
 
-Mesh::Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::filesystem::path& rootPath)
+Mesh::Mesh(unsigned int startIndex, unsigned int endIndex/*, tinyobj::material_t& material*/) : startIndex(startIndex), endIndex(endIndex)
 {
-    if (!assimpMesh->HasNormals() || !assimpMesh->HasFaces())
-    {
-        throw std::runtime_error("Mesh must have normals and faces");
-    }
-
-    // - - - VERTICES, NORMALS, UV_COORDS - - -
-
-    std::thread vntThread([&]()
-    {
-        vertices.resize(assimpMesh->mNumVertices);
-        normals.resize(assimpMesh->mNumVertices);
-        uvs.resize(assimpMesh->mNumVertices);
-
-#pragma omp parallel for
-        for (int64_t i = 0; i < static_cast<int64_t>(assimpMesh->mNumVertices); ++i)
-        {
-            const auto aivec = assimpMesh->mVertices[i];
-            vertices[i] = glm::vec4(aivec.x, aivec.y, aivec.z, 1.0f);
-
-            const auto ainorm = assimpMesh->mNormals[i];
-            normals[i] = glm::vec4(ainorm.x, ainorm.y, ainorm.z, 0.0f);
-
-            if (assimpMesh->HasTextureCoords(0))
-            {
-                const aiVector3D aitex = assimpMesh->mTextureCoords[0][i];
-                uvs[i] = glm::vec2(aitex.x, aitex.y);
-            }
-        }
-
-        calculateBoundingBox();
-    });
-
-    // - - - I N D I C E S - - -
-
-    std::thread indexThread([&]()
-    {
-        indices.resize(assimpMesh->mNumFaces * 3);
-
-#pragma omp parallel for
-        for (int64_t i = 0; i < static_cast<int64_t>(assimpMesh->mNumFaces); ++i)
-        {
-            const auto face = assimpMesh->mFaces[i];
-
-            indices[i * 3 + 0] = face.mIndices[0];
-            indices[i * 3 + 1] = face.mIndices[1];
-            indices[i * 3 + 2] = face.mIndices[2];
-        }
-    });
-
     // - - - M A T E R I A L - - -
 
-    aiString reltexPath;
-    for (aiTextureType type : {aiTextureType_DIFFUSE, aiTextureType_OPACITY, aiTextureType_SHININESS, aiTextureType_REFLECTION, aiTextureType_NORMALS, aiTextureType_HEIGHT, aiTextureType_LIGHTMAP })
-    {
-        //has texture
-        if (assimpMat->GetTextureCount(type) > 0)
-        {
-            assimpMat->GetTexture(type, 0, &reltexPath);
-            auto absTexPath = std::filesystem::absolute(rootPath.parent_path() / std::filesystem::path(reltexPath.C_Str()));
+    //aiString reltexPath;
+    //for (aiTextureType type : {aiTextureType_DIFFUSE, aiTextureType_OPACITY, aiTextureType_SHININESS, aiTextureType_REFLECTION, aiTextureType_NORMALS, aiTextureType_HEIGHT, aiTextureType_LIGHTMAP })
+    //{
+    //    //has texture
+    //    if (assimpMat->GetTextureCount(type) > 0)
+    //    {
+    //        assimpMat->GetTexture(type, 0, &reltexPath);
+    //        auto absTexPath = std::filesystem::absolute(rootPath.parent_path() / std::filesystem::path(reltexPath.C_Str()));
 
-            switch (type)
-            {
-            case aiTextureType_DIFFUSE: //albedo
-            {
-                m_textures[aiTextureType_DIFFUSE] = std::make_shared<Texture>(absTexPath, 4);
-                material.setColor(m_textures[aiTextureType_DIFFUSE]);
-                m_transparent = m_textures[aiTextureType_DIFFUSE]->data<float>(GL_RGBA)[3] < 0.9f;
-                break;
-            }
-            case aiTextureType_OPACITY: //albedo alpha
-            {
-                if (assimpMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
-                {
-                    copyToAlpha(absTexPath, m_textures[aiTextureType_DIFFUSE]);
-                    material.setColor(m_textures[aiTextureType_DIFFUSE]);
-                    m_transparent = true;
-                }
-                break;
-            }
-            case aiTextureType_SHININESS: //roughness
-            {
-                m_textures[aiTextureType_SHININESS] = std::make_shared<Texture>(absTexPath, 1);
-                material.setRoughness(m_textures[aiTextureType_SHININESS]);
-                break;
-            }
-            case aiTextureType_REFLECTION: //metallic
-            {
-                m_textures[aiTextureType_REFLECTION] = std::make_shared<Texture>(absTexPath, 1);
-                material.setMetallic(m_textures[aiTextureType_REFLECTION]);
-                break;
-            }            
-            case aiTextureType_NORMALS: //normal
-            {
-                m_textures[aiTextureType_NORMALS] = std::make_shared<Texture>(absTexPath, 4);
-                material.setNormalMap(m_textures[aiTextureType_NORMALS]);
-                break;
-            }
-            case aiTextureType_HEIGHT: //height-to-normal or normal alpha
-            {
-                if (assimpMat->GetTextureCount(aiTextureType_NORMALS) > 0)
-                    copyToAlpha(absTexPath, m_textures[aiTextureType_NORMALS]);
-                else
-                    m_textures[aiTextureType_NORMALS] = generateNormalFromHeight(absTexPath);
+    //        switch (type)
+    //        {
+    //        case aiTextureType_DIFFUSE: //albedo
+    //        {
+    //            m_textures[aiTextureType_DIFFUSE] = std::make_shared<Texture>(absTexPath, 4);
+    //            material.setColor(m_textures[aiTextureType_DIFFUSE]);
+    //            m_transparent = m_textures[aiTextureType_DIFFUSE]->data<float>(GL_RGBA)[3] < 0.9f;
+    //            break;
+    //        }
+    //        case aiTextureType_OPACITY: //albedo alpha
+    //        {
+    //            if (assimpMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+    //            {
+    //                copyToAlpha(absTexPath, m_textures[aiTextureType_DIFFUSE]);
+    //                material.setColor(m_textures[aiTextureType_DIFFUSE]);
+    //                m_transparent = true;
+    //            }
+    //            break;
+    //        }
+    //        case aiTextureType_SHININESS: //roughness
+    //        {
+    //            m_textures[aiTextureType_SHININESS] = std::make_shared<Texture>(absTexPath, 1);
+    //            material.setRoughness(m_textures[aiTextureType_SHININESS]);
+    //            break;
+    //        }
+    //        case aiTextureType_REFLECTION: //metallic
+    //        {
+    //            m_textures[aiTextureType_REFLECTION] = std::make_shared<Texture>(absTexPath, 1);
+    //            material.setMetallic(m_textures[aiTextureType_REFLECTION]);
+    //            break;
+    //        }            
+    //        case aiTextureType_NORMALS: //normal
+    //        {
+    //            m_textures[aiTextureType_NORMALS] = std::make_shared<Texture>(absTexPath, 4);
+    //            material.setNormalMap(m_textures[aiTextureType_NORMALS]);
+    //            break;
+    //        }
+    //        case aiTextureType_HEIGHT: //height-to-normal or normal alpha
+    //        {
+    //            if (assimpMat->GetTextureCount(aiTextureType_NORMALS) > 0)
+    //                copyToAlpha(absTexPath, m_textures[aiTextureType_NORMALS]);
+    //            else
+    //                m_textures[aiTextureType_NORMALS] = generateNormalFromHeight(absTexPath);
 
-                material.setNormalMap(m_textures[aiTextureType_NORMALS]);
-                break;
-            }
-            case aiTextureType_LIGHTMAP: //ambient occlusion
-            {
-                m_textures[aiTextureType_LIGHTMAP] = std::make_shared<Texture>(absTexPath, 1);
-                material.setAoMap(m_textures[aiTextureType_LIGHTMAP]);
-                break;
-            }
-            default:
-                break;
-            }
-        }
-        else //has no texture
-        {
-            switch (type)
-            {
-            case aiTextureType_DIFFUSE: //albedo
-            {
-                aiColor3D diffcolor(0.0f, 0.0f, 0.0f);
-                assimpMat->Get(AI_MATKEY_COLOR_DIFFUSE, diffcolor);
-                material.setColor(glm::vec4(diffcolor.r, diffcolor.g, diffcolor.b, 1.0f));
-                break;
-            }
-            case aiTextureType_OPACITY: //albedo alpha
-            {
-                if (assimpMat->GetTextureCount(aiTextureType_DIFFUSE) == 0)
-                {
-                    float op;
-                    assimpMat->Get(AI_MATKEY_OPACITY, op);
-                    material.setColor(glm::vec4(glm::vec3(material.getColor()), op));
-                    m_transparent = op < 0.9f;
-                }
-                break;
-            }
-            case aiTextureType_SHININESS: //roughness
-            {
-                float shn;
-                assimpMat->Get(AI_MATKEY_SHININESS, shn);
-                shn = glm::pow(2.0f / (shn + 2.0f), 0.25f); //transform shininess to roughness
-                material.setRoughness(shn);
-                break;
-            }
-            case aiTextureType_REFLECTION: //metallic
-            {
-                float refl;
-                assimpMat->Get(AI_MATKEY_REFLECTIVITY, refl);
-                material.setMetallic(refl);
-                break;
-            }
-            //case aiTextureType_NORMALS: //normal
-            //    break;
-            //case aiTextureType_HEIGHT: //height-to-normal or normal alpha
-            //    break;
-            //case aiTextureType_LIGHTMAP: //ambient occlusion
-            //    break;
-            default:
-                break;
-            }
-        }
+    //            material.setNormalMap(m_textures[aiTextureType_NORMALS]);
+    //            break;
+    //        }
+    //        case aiTextureType_LIGHTMAP: //ambient occlusion
+    //        {
+    //            m_textures[aiTextureType_LIGHTMAP] = std::make_shared<Texture>(absTexPath, 1);
+    //            material.setAoMap(m_textures[aiTextureType_LIGHTMAP]);
+    //            break;
+    //        }
+    //        default:
+    //            break;
+    //        }
+    //    }
+    //    else //has no texture
+    //    {
+    //        switch (type)
+    //        {
+    //        case aiTextureType_DIFFUSE: //albedo
+    //        {
+    //            aiColor3D diffcolor(0.0f, 0.0f, 0.0f);
+    //            assimpMat->Get(AI_MATKEY_COLOR_DIFFUSE, diffcolor);
+    //            material.setColor(glm::vec4(diffcolor.r, diffcolor.g, diffcolor.b, 1.0f));
+    //            break;
+    //        }
+    //        case aiTextureType_OPACITY: //albedo alpha
+    //        {
+    //            if (assimpMat->GetTextureCount(aiTextureType_DIFFUSE) == 0)
+    //            {
+    //                float op;
+    //                assimpMat->Get(AI_MATKEY_OPACITY, op);
+    //                material.setColor(glm::vec4(glm::vec3(material.getColor()), op));
+    //                m_transparent = op < 0.9f;
+    //            }
+    //            break;
+    //        }
+    //        case aiTextureType_SHININESS: //roughness
+    //        {
+    //            float shn;
+    //            assimpMat->Get(AI_MATKEY_SHININESS, shn);
+    //            shn = glm::pow(2.0f / (shn + 2.0f), 0.25f); //transform shininess to roughness
+    //            material.setRoughness(shn);
+    //            break;
+    //        }
+    //        case aiTextureType_REFLECTION: //metallic
+    //        {
+    //            float refl;
+    //            assimpMat->Get(AI_MATKEY_REFLECTIVITY, refl);
+    //            material.setMetallic(refl);
+    //            break;
+    //        }
+    //        //case aiTextureType_NORMALS: //normal
+    //        //    break;
+    //        //case aiTextureType_HEIGHT: //height-to-normal or normal alpha
+    //        //    break;
+    //        //case aiTextureType_LIGHTMAP: //ambient occlusion
+    //        //    break;
+    //        default:
+    //            break;
+    //        }
+    //    }
 
-        float ior;
-        assimpMat->Get(AI_MATKEY_REFRACTI, ior);
-        material.setIOR(ior);
-    }
+    //    float ior;
+    //    assimpMat->Get(AI_MATKEY_REFRACTI, ior);
+    //    material.setIOR(ior);
+    //}
 
-    vntThread.join();
-    indexThread.join();
+    //vntThread.join();
+    //indexThread.join();
 
-    calculateBoundingBox();
+    //calculateBoundingBox();
 }
 
 void Mesh::copyToAlpha(const std::filesystem::path& src, const std::shared_ptr<Texture>& dst) const
@@ -240,26 +191,26 @@ std::shared_ptr<Texture> Mesh::generateNormalFromHeight(const std::filesystem::p
     return tex;
 }
 
-Bounds& Mesh::calculateBoundingBox()
+void Mesh::setBoundingBox(const Bounds& bounds)
 {
-    struct Reduction
-    {
-        Bounds operator()(Bounds b, const glm::vec3& x) const { return b + x; }
+    //struct Reduction
+    //{
+    //    Bounds operator()(Bounds b, const glm::vec3& x) const { return b + x; }
 
-        Bounds operator()(const glm::vec3& x, Bounds b) const { return b + x; }
+    //    Bounds operator()(const glm::vec3& x, Bounds b) const { return b + x; }
 
-        Bounds operator()(const glm::vec3& a, const glm::vec3& b) const
-        {
-            Bounds bounds;
-            bounds = bounds + a;
-            return bounds + b;
-        }
+    //    Bounds operator()(const glm::vec3& a, const glm::vec3& b) const
+    //    {
+    //        Bounds bounds;
+    //        bounds = bounds + a;
+    //        return bounds + b;
+    //    }
 
-        Bounds operator()(Bounds b, const Bounds& x) const { return b + x; }
-    };
+    //    Bounds operator()(Bounds b, const Bounds& x) const { return b + x; }
+    //};
 
-    bounds = std::reduce(std::execution::par_unseq, vertices.begin(), vertices.end(), Bounds(), Reduction());
-    return bounds;
+    //bounds = std::reduce(std::execution::par_unseq, vertices.begin(), vertices.end(), Bounds(), Reduction());
+	this->bounds = bounds;
 }
 
 bool Mesh::isTransparent() const

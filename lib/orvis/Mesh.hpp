@@ -4,6 +4,8 @@
 #include "Material.hpp"
 #include <assimp/scene.h>
 #include "Scene.hpp"
+#include "Vertex.hpp"
+#include <tiny_obj_loader.h>
 
 class Mesh
 {
@@ -12,10 +14,8 @@ public:
 
     Mesh() = default;
 
-    std::vector<glm::vec4> vertices;
-    std::vector<glm::vec4> normals;
-    std::vector<glm::vec2> uvs;
-    std::vector<unsigned int> indices;
+	unsigned int startIndex = 0;
+	unsigned int endIndex = 0;
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
@@ -24,16 +24,13 @@ public:
     /** @brief The _untransformed_ bounding box. */
     Bounds bounds;
 
-    /** @brief Calculates the untransformed bounding box. 
-     * Only has to be called if the vertices are changed.
-     */
-    Bounds& calculateBoundingBox();
-
     /** @return True if the mesh has a (partially) transparent material */
     bool isTransparent() const;
 
 private:
-    explicit Mesh(aiMesh* assimpMesh, aiMaterial* assimpMat, const std::filesystem::path& rootPath);
+    explicit Mesh(unsigned int startIndex, unsigned int endIndex/*, tinyobj::material_t& material*/);
+
+	void setBoundingBox(const Bounds& bounds);
 
     std::unordered_map<aiTextureType, std::shared_ptr<Texture>> m_textures;
 

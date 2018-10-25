@@ -10,7 +10,7 @@ set(ORV_BINARIES_FOLDER			${PROJECT_SOURCE_DIR}/bin)
 set(ORV_RESOURCES_PATH			${PROJECT_SOURCE_DIR}/res)
 set(ORV_SHADERS_PATH			${PROJECT_SOURCE_DIR}/shd)
 
-find_package(assimp REQUIRED)
+find_package(tinyobjloader REQUIRED)
 find_package(glm REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glbinding REQUIRED)
@@ -23,14 +23,15 @@ add_definitions(
     -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL
     -DNOMINMAX
     -DSOURCE_DIRECTORY="${CMAKE_SOURCE_DIR}/"
+	-DGLM_FORCE_PURE
 )
 
 if(MSVC)
     add_compile_options(/std:c++latest /MP /openmp /permissive- /Zc:twoPhase- /wd4251)
     set(ORV_LINKER_FLAGS "/NODEFAULTLIB:libcmt /ignore:4098,4099,4221 /MANIFEST:NO")
     list(APPEND ORV_LIBRARIES opengl32)
-    file(COPY "${ASSIMP_ROOT_DIR}/bin${ASSIMP_ARCHITECTURE}/assimp-vc140-mt.dll" DESTINATION "${ORV_BINARIES_FOLDER}/Debug")
-    file(COPY "${ASSIMP_ROOT_DIR}/bin${ASSIMP_ARCHITECTURE}/assimp-vc140-mt.dll" DESTINATION "${ORV_BINARIES_FOLDER}/Release")
+    #file(COPY "${ASSIMP_ROOT_DIR}/bin${ASSIMP_ARCHITECTURE}/assimp-vc140-mt.dll" DESTINATION "${ORV_BINARIES_FOLDER}/Debug")
+    #file(COPY "${ASSIMP_ROOT_DIR}/bin${ASSIMP_ARCHITECTURE}/assimp-vc140-mt.dll" DESTINATION "${ORV_BINARIES_FOLDER}/Release")
 else()
 endif()
 
@@ -48,7 +49,7 @@ foreach(subdir ${children})
             set(success 0)
         else()
             add_library(${subdir} ${ORV_SOURCE_FILE})
-            target_link_libraries(${subdir} PRIVATE glfw glbinding::glbinding ${ASSIMP_LIBRARIES} glm)
+            target_link_libraries(${subdir} PRIVATE glfw glbinding::glbinding tinyobjloader glm)
 
             list(APPEND ORV_LIBRARIES ${subdir})
             set_target_properties(${subdir} PROPERTIES
@@ -118,7 +119,7 @@ foreach(subdir ${children})
 
         add_executable(${subdir} ${EXE_SOURCES})
         target_link_libraries(${subdir} PRIVATE ${ORV_LIBRARIES})
-        target_link_libraries(${subdir} PRIVATE glfw glbinding::glbinding ${ASSIMP_LIBRARIES} glm)
+        target_link_libraries(${subdir} PRIVATE glfw glbinding::glbinding tinyobjloader glm)
         #file(COPY ${ORV_DLLS} DESTINATION "${ORV_BINARIES_FOLDER}")
         set_target_properties(${subdir} PROPERTIES
 										LINKER_LANGUAGE CXX
